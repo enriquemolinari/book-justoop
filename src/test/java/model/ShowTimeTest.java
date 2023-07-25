@@ -68,15 +68,61 @@ public class ShowTimeTest {
 		var seatsToReserveByCarlos = Set.of(1, 2);
 		aShow.reserveSeatsFor(carlos, seatsToReserveByCarlos);
 
-		var seatsToReserveByJose = Set.of(2, 3);
+		var seatsToTryReserveByJose = Set.of(2, 3);
 		Exception e = assertThrows(BusinessException.class, () -> {
-			aShow.reserveSeatsFor(carlos, seatsToReserveByJose);
+			aShow.reserveSeatsFor(carlos, seatsToTryReserveByJose);
 		});
 
-		assertEquals(e.getMessage(), ShowTime.SEATS_CHOSEN_ARE_BUSY);
+		assertEquals(e.getMessage(), ShowTime.SELECTED_SEATS_ARE_BUSY);
 		assertTrue(aShow.areAllSeatsReservedBy(carlos, seatsToReserveByCarlos));
+		assertTrue(aShow.noneOfTheSeatsAreReservedBy(jose,
+				seatsToTryReserveByJose));
+	}
+
+	@Test
+	public void confirmReservedSeats() {
+		var aShow = createShowForSmallFish();
+		var carlos = createCarlosUser();
+
+		var seatsToReserveByCarlos = Set.of(1, 2);
+		aShow.reserveSeatsFor(carlos, seatsToReserveByCarlos);
+
+		var seatsToConfirmByCarlos = Set.of(1, 2);
+		aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos);
+
 		assertTrue(
-				aShow.noneOfTheSeatsAreReservedBy(jose, seatsToReserveByJose));
+				aShow.areAllSeatsConfirmedBy(carlos, seatsToConfirmByCarlos));
+	}
+
+	@Test
+	public void notAllSeatsAreReserved() {
+		var aShow = createShowForSmallFish();
+		var carlos = createCarlosUser();
+
+		aShow.reserveSeatsFor(carlos, Set.of(1, 2));
+
+		assertFalse(aShow.areAllSeatsReservedBy(carlos, Set.of(1, 2, 5)));
+	}
+
+	@Test
+	public void confirmNonReservedSeats() {
+		var aShow = createShowForSmallFish();
+		var carlos = createCarlosUser();
+
+		var seatsToReserveByCarlos = Set.of(1, 2, 4, 5);
+		aShow.reserveSeatsFor(carlos, seatsToReserveByCarlos);
+
+		var seatsToConfirmByCarlos = Set.of(5, 6, 7);
+
+		Exception e = assertThrows(BusinessException.class, () -> {
+			aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos);
+		});
+
+		assertEquals(e.getMessage(),
+				ShowTime.RESERVATION_IS_REQUIRED_TO_CONFIRM);
+		assertTrue(aShow.areAllSeatsReservedBy(carlos, seatsToReserveByCarlos));
+		assertTrue(aShow.noneOfTheSeatsAreConfirmedBy(carlos,
+				seatsToConfirmByCarlos));
 	}
 
 	private User createCarlosUser() {

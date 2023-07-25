@@ -27,7 +27,8 @@ class ShowTime {
 
 	static final String START_TIME_MUST_BE_IN_THE_FUTURE = "The show start time must be in the future";
 	static final String PRICE_MUST_BE_POSITIVE = "The price must be greater than zero";
-	static final String SEATS_CHOSEN_ARE_BUSY = "All or some of the seats chosen are busy";
+	static final String SELECTED_SEATS_ARE_BUSY = "All or some of the seats chosen are busy";
+	static final String RESERVATION_IS_REQUIRED_TO_CONFIRM = "Reservation is required before confirm";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -36,7 +37,7 @@ class ShowTime {
 
 	@Transient
 	// When hibernate creates an instance of this class, this will be
-	// null if I don't initialize here.
+	// null if I don't initialize it here.
 	private DateTimeProvider timeProvider = DateTimeProvider.create();
 
 	@OneToOne(fetch = FetchType.LAZY)
@@ -65,28 +66,41 @@ class ShowTime {
 	}
 
 	private Set<ShowSeat> filterSelectedSeats(Set<Integer> selectedSeats) {
-		return this.seatsForThisShow.stream().filter(s -> s.isIn(selectedSeats))
+		return this.seatsForThisShow.stream()
+				.filter(seat -> seat.isIn(selectedSeats))
 				.collect(Collectors.toUnmodifiableSet());
 	}
 
 	public void reserveSeatsFor(User user, Set<Integer> selectedSeats) {
 		var selection = filterSelectedSeats(selectedSeats);
 		checkAllSelectedSeatsAreAvailable(selection);
-		reserveAllSeatsBy(user, selection);
+		reserveAllSeatsFor(user, selection);
 	}
 
-	private void reserveAllSeatsBy(User user, Set<ShowSeat> selection) {
-		selection.stream().forEach(s -> s.reserveFor(user));
+	private void reserveAllSeatsFor(User user, Set<ShowSeat> selection) {
+		selection.stream().forEach(seat -> seat.reserveFor(user));
+	}
+
+	private void confirmAllSeatsFor(User user, Set<ShowSeat> selection) {
+		selection.stream().forEach(seat -> seat.confirmFor(user));
 	}
 
 	private void checkAllSelectedSeatsAreAvailable(Set<ShowSeat> selection) {
-		if (selection.stream().anyMatch(s -> s.isBusy())) {
-			throw new BusinessException(SEATS_CHOSEN_ARE_BUSY);
-		}
+		checkAtLeastOneMatchConditionFor(selection, seat -> seat.isBusy(),
+				SELECTED_SEATS_ARE_BUSY);
 	}
 
-	public void confirmSeatsFor(User user, Set<ShowSeat> chosenSeats) {
-		throw new RuntimeException("not implemented yet...");
+	private void checkAllSelectedSeatsAreReservedBy(User user,
+			Set<ShowSeat> selection) {
+		checkAtLeastOneMatchConditionFor(selection,
+				seat -> !seat.isReservedBy(user),
+				RESERVATION_IS_REQUIRED_TO_CONFIRM);
+	}
+
+	public void confirmSeatsFor(User user, Set<Integer> selectedSeats) {
+		var selection = filterSelectedSeats(selectedSeats);
+		checkAllSelectedSeatsAreReservedBy(user, selection);
+		confirmAllSeatsFor(user, selection);
 	}
 
 	// public Set<ShowSeat> availableSeats() {
@@ -108,22 +122,41 @@ class ShowTime {
 
 	public boolean hasSeatNumbered(int aSeatNumber) {
 		return this.seatsForThisShow.stream()
-				.anyMatch(s -> s.isSeatNumbered(aSeatNumber));
+				.anyMatch(seat -> seat.isSeatNumbered(aSeatNumber));
 	}
 
-	boolean noneOfTheSeatsAreReservedBy(User aUser, Set<Integer> seatsToReserve) {
-		return allReservedBy(aUser, seatsToReserve,
-				s -> !s.isReservedBy(aUser));
+	boolean noneOfTheSeatsAreReservedBy(User aUser,
+			Set<Integer> seatsToReserve) {
+		return !areAllSeatsReservedBy(aUser, seatsToReserve);
+	}
+
+	public boolean noneOfTheSeatsAreConfirmedBy(User carlos,
+			Set<Integer> seatsToConfirmByCarlos) {
+		return !areAllSeatsConfirmedBy(carlos, seatsToConfirmByCarlos);
+	}
+
+	boolean areAllSeatsConfirmedBy(User aUser, Set<Integer> seatsToReserve) {
+		var selectedSeats = filterSelectedSeats(seatsToReserve);
+		return allMatchConditionFor(selectedSeats,
+				seat -> seat.isConfirmedBy(aUser));
 	}
 
 	boolean areAllSeatsReservedBy(User aUser, Set<Integer> seatsToReserve) {
-		return allReservedBy(aUser, seatsToReserve, s -> s.isReservedBy(aUser));
-	}
-
-	boolean allReservedBy(User aUser, Set<Integer> seatsToReserve,
-			Predicate<ShowSeat> predicate) {
 		var selectedSeats = filterSelectedSeats(seatsToReserve);
-		return selectedSeats.stream().allMatch(predicate);
-
+		return allMatchConditionFor(selectedSeats,
+				seat -> seat.isReservedBy(aUser));
 	}
+
+	private void checkAtLeastOneMatchConditionFor(Set<ShowSeat> seatsToReserve,
+			Predicate<ShowSeat> condition, String errorMsg) {
+		if (seatsToReserve.stream().anyMatch(condition)) {
+			throw new BusinessException(errorMsg);
+		}
+	}
+
+	private boolean allMatchConditionFor(Set<ShowSeat> seatsToReserve,
+			Predicate<ShowSeat> condition) {
+		return seatsToReserve.stream().allMatch(condition);
+	}
+
 }

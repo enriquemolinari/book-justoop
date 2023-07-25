@@ -24,6 +24,7 @@ import lombok.Setter;
 class ShowSeat {
 
 	static final String SEAT_BUSY = "Seat is currently busy";
+	static final String SEAT_NOT_RESERVED_OR_ALREADY_CONFIRMED = "The seat cannot be confirmed";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -37,7 +38,6 @@ class ShowSeat {
 	@JoinColumn(name = "id_show")
 	private ShowTime show;
 	private LocalDateTime reservedUntil;
-	// @OneToOne(fetch = FetchType.LAZY)
 	private Integer seatNumber;
 	@Version
 	private int version;
@@ -72,18 +72,25 @@ class ShowSeat {
 
 	public void confirmFor(User user) {
 		if (!isReservedBy(user) || confirmed) {
-			throw new BusinessException("");
+			throw new BusinessException(SEAT_NOT_RESERVED_OR_ALREADY_CONFIRMED);
 		}
 
-		this.reserved = true;
+		this.confirmed = true;
 		this.user = user;
+	}
+
+	boolean isConfirmedBy(User user) {
+		if (this.user == null) {
+			return false;
+		}
+		return confirmed && this.user.equals(user);
 	}
 
 	boolean isReservedBy(User user) {
 		if (this.user == null) {
 			return false;
 		}
-		return this.user.equals(user);
+		return reserved && this.user.equals(user);
 	}
 
 	public boolean isSeatNumbered(int aSeatNumber) {
