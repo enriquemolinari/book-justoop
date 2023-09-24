@@ -4,14 +4,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
 class Actor {
@@ -19,12 +20,11 @@ class Actor {
 	public static final String NAME_INVALID = "name must not be blank";
 	public static final String CHARACTER_NAME_INVALID = "character name must not be blank";
 
-	// TODO: los actores pueden estar en varias peliculas...
-	// aca repito el nombre, por cada pelicula distinta en la que trabajan
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
-	@OneToOne
+	@ManyToOne
+	@JoinColumn(name = "id_person")
 	private Person person;
 	private String characterName;
 

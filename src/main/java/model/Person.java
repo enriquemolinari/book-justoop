@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
 class Person {
@@ -36,5 +36,13 @@ class Person {
 
 	String fullName() {
 		return this.name + " " + this.surname;
+	}
+
+	public boolean hasName(String aName) {
+		return this.name.equals(aName);
+	}
+
+	public boolean aSurname(String aSurname) {
+		return this.surname.equals(aSurname);
 	}
 }

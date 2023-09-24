@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -18,11 +19,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
 class ShowSeat {
 
+	static final int MINUTES_TO_KEEP_RESERVATION = 5;
 	static final String SEAT_BUSY = "Seat is currently busy";
 	static final String SEAT_NOT_RESERVED_OR_ALREADY_CONFIRMED = "The seat cannot be confirmed";
 
@@ -42,15 +44,18 @@ class ShowSeat {
 	@Version
 	private int version;
 
-	// TODO: falta incorporar el reservedUntil
+	@Transient
+	// This allows testing
+	private DateTimeProvider provider = DateTimeProvider.create();
 
-	public ShowSeat(ShowTime s, Integer seatNumber) {
+	public ShowSeat(ShowTime s, Integer seatNumber,
+			DateTimeProvider dateProvider) {
 		this.show = s;
 		this.seatNumber = seatNumber;
 
 		this.reserved = false;
 		this.confirmed = false;
-		this.user = null;
+		this.provider = dateProvider;
 	}
 
 	public void reserveFor(User user) {
@@ -60,6 +65,8 @@ class ShowSeat {
 
 		this.reserved = true;
 		this.user = user;
+		this.reservedUntil = provider.now()
+				.plusMinutes(MINUTES_TO_KEEP_RESERVATION);
 	}
 
 	public boolean isBusy() {
@@ -90,14 +97,15 @@ class ShowSeat {
 		if (this.user == null) {
 			return false;
 		}
-		return reserved && this.user.equals(user);
+		return reserved && this.user.equals(user)
+				&& LocalDateTime.now().isBefore(this.reservedUntil);
 	}
 
 	public boolean isSeatNumbered(int aSeatNumber) {
 		return this.seatNumber.equals(aSeatNumber);
 	}
 
-	public boolean isIn(Set<Integer> selectedSeats) {
+	public boolean isIncludedIn(Set<Integer> selectedSeats) {
 		return selectedSeats.stream()
 				.anyMatch(ss -> ss.equals(this.seatNumber));
 	}

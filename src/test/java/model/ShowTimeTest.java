@@ -5,14 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
 public class ShowTimeTest {
 
-	private final ObjectsForTests tests = new ObjectsForTests();
+	private final ForTests tests = new ForTests();
 
 	@Test
 	public void showTimeStartTimeMustBeInTheFuture() {
@@ -20,7 +22,9 @@ public class ShowTimeTest {
 			new ShowTime(DateTimeProvider.create(),
 					tests.createSmallFishMovie(),
 					LocalDateTime.of(2023, 03, 10, 15, 0, 0, 0), 10f,
-					new Theater("A Theater", Set.of(1)));
+					new Theater("A Theater", Set.of(1),
+							DateTimeProvider.create()),
+					tests.emptyPayment(), tests.emptyProvider());
 		});
 
 		assertEquals(e.getMessage(), ShowTime.START_TIME_MUST_BE_IN_THE_FUTURE);
@@ -32,7 +36,9 @@ public class ShowTimeTest {
 			new ShowTime(DateTimeProvider.create(),
 					tests.createSmallFishMovie(),
 					LocalDateTime.now().plusDays(1), 0f,
-					new Theater("A Theater", Set.of(1)));
+					new Theater("A Theater", Set.of(1),
+							DateTimeProvider.create()),
+					tests.emptyPayment(), tests.emptyProvider());
 		});
 
 		assertEquals(e.getMessage(), ShowTime.PRICE_MUST_BE_POSITIVE);
@@ -40,17 +46,31 @@ public class ShowTimeTest {
 
 	@Test
 	public void createShowTime() {
-		var aShow = createShowForSmallFish();
+		var aShow = tests.createShowForSmallFish();
 
 		assertTrue(aShow.hasSeatNumbered(1));
 		assertTrue(aShow.hasSeatNumbered(2));
 		assertFalse(aShow.hasSeatNumbered(8));
-		assertTrue(aShow.startAt(LocalDateTime.of(2023, 10, 10, 15, 0, 0, 0)));
+		assertTrue(aShow
+				.isStartingAt(LocalDateTime.of(2023, 10, 10, 15, 0, 0, 0)));
+	}
+
+	@Test
+	public void reservationHasExpired() {
+		var aShow = tests.createShowForSmallFish(
+				// already expired reservation
+				() -> LocalDateTime.now().minusMinutes(6));
+		var carlos = createCarlosUser();
+
+		var seatsToReserve = Set.of(1, 2);
+		aShow.reserveSeatsFor(carlos, seatsToReserve);
+
+		assertFalse(aShow.areAllSeatsReservedBy(carlos, seatsToReserve));
 	}
 
 	@Test
 	public void reserveAnAvailableSeat() {
-		var aShow = createShowForSmallFish();
+		var aShow = tests.createShowForSmallFish();
 		var carlos = createCarlosUser();
 
 		var seatsToReserve = Set.of(1, 2);
@@ -61,7 +81,7 @@ public class ShowTimeTest {
 
 	@Test
 	public void reserveAlreadyReservedSeats() {
-		var aShow = createShowForSmallFish();
+		var aShow = tests.createShowForSmallFish();
 		var carlos = createCarlosUser();
 		var jose = createJoseUser();
 
@@ -79,16 +99,30 @@ public class ShowTimeTest {
 				seatsToTryReserveByJose));
 	}
 
+	// TODO: test para validar que se invoco a payment y a email, y verificar el
+	// total de la venta
+	@Test
+	public void bla() {
+		var st = new ShowTime(DateTimeProvider.create(),
+				tests.createSmallFishMovie(),
+				LocalDateTime.of(2023, 10, 10, 15, 0, 0, 0), 10f,
+				new Theater("a Theater", Set.of(1, 2, 3, 4, 5, 6),
+						DateTimeProvider.create()),
+				null, null);
+	}
+
 	@Test
 	public void confirmReservedSeats() {
-		var aShow = createShowForSmallFish();
+		var aShow = tests.createShowForSmallFish();
 		var carlos = createCarlosUser();
 
 		var seatsToReserveByCarlos = Set.of(1, 2);
 		aShow.reserveSeatsFor(carlos, seatsToReserveByCarlos);
 
 		var seatsToConfirmByCarlos = Set.of(1, 2);
-		aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos);
+		aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos,
+				"creditCardNumber",
+				YearMonth.of(LocalDate.now().getYear() + 1, 5), "securityCode");
 
 		assertTrue(
 				aShow.areAllSeatsConfirmedBy(carlos, seatsToConfirmByCarlos));
@@ -96,7 +130,7 @@ public class ShowTimeTest {
 
 	@Test
 	public void notAllSeatsAreReserved() {
-		var aShow = createShowForSmallFish();
+		var aShow = tests.createShowForSmallFish();
 		var carlos = createCarlosUser();
 
 		aShow.reserveSeatsFor(carlos, Set.of(1, 2));
@@ -106,7 +140,7 @@ public class ShowTimeTest {
 
 	@Test
 	public void confirmNonReservedSeats() {
-		var aShow = createShowForSmallFish();
+		var aShow = tests.createShowForSmallFish();
 		var carlos = createCarlosUser();
 
 		var seatsToReserveByCarlos = Set.of(1, 2, 4, 5);
@@ -115,7 +149,10 @@ public class ShowTimeTest {
 		var seatsToConfirmByCarlos = Set.of(5, 6, 7);
 
 		Exception e = assertThrows(BusinessException.class, () -> {
-			aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos);
+			aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos,
+					"creditCardNumber",
+					YearMonth.of(LocalDate.now().getYear() + 1, 5),
+					"securityCode");
 		});
 
 		assertEquals(e.getMessage(),
@@ -126,18 +163,13 @@ public class ShowTimeTest {
 	}
 
 	private User createCarlosUser() {
-		return new User(new Person("Carlos", "Garzia"), "cgarzia");
+		return new User(new Person("Carlos", "Garzia"), "cgarzia",
+				"cgarzia@my.com", "123456789101112");
 	}
 
 	private User createJoseUser() {
-		return new User(new Person("Jose", "Lopiz"), "jlopiz");
-	}
-
-	private ShowTime createShowForSmallFish() {
-		return new ShowTime(DateTimeProvider.create(),
-				tests.createSmallFishMovie(),
-				LocalDateTime.of(2023, 10, 10, 15, 0, 0, 0), 10f,
-				new Theater("a Theater", Set.of(1, 2, 3, 4, 5, 6)));
+		return new User(new Person("Jose", "Lopiz"), "jlopiz", "jlopiz@my.com",
+				"123456789101112");
 	}
 
 }

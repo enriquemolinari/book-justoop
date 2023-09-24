@@ -1,6 +1,7 @@
 package model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,11 +16,14 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "ClientUser")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"userName"})
 class User {
+
+	static final String CAN_NOT_CHANGE_PASSWORD = "Some of the provided information is not valid to change the password";
+	static final String POINTS_MUST_BE_GREATER_THAN_ZERO = "Points must be greater than zero";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -28,9 +32,65 @@ class User {
 	private String userName;
 	@OneToOne
 	private Person person;
+	@Embedded
+	private Email email;
+	// this must not escape by any means out of this object
+	@Embedded
+	private Password password;
 
-	public User(Person person, String userName) {
+	private int points;
+
+	public User(Person person, String userName, String email, String password) {
 		this.person = person;
-		this.userName = userName;
+		this.userName = new NotBlankString(userName, "").value();
+		this.password = new Password(password);
+		this.email = new Email(email);
+		this.points = 0;
+	}
+
+	boolean isPassword(String password) {
+		return this.password.equals(new Password(password));
+	}
+
+	public void changePassword(String currentPassword, String newPassword1,
+			String newPassword2) {
+		if (!isPassword(currentPassword)) {
+			throw new BusinessException(CAN_NOT_CHANGE_PASSWORD);
+		}
+		if (!newPassword1.equals(newPassword2)) {
+			throw new BusinessException(CAN_NOT_CHANGE_PASSWORD);
+		}
+		this.password = new Password(newPassword1);
+	}
+
+	public void newEarnedPoints(int points) {
+		if (points <= 0) {
+			throw new BusinessException(POINTS_MUST_BE_GREATER_THAN_ZERO);
+		}
+		this.points += points;
+	}
+
+	public boolean hasPoints(int points) {
+		return this.points == points;
+	}
+
+	public String userName() {
+		return userName;
+	}
+
+	public boolean hasName(String aName) {
+		return this.person.hasName(aName);
+	}
+
+	public boolean hasSurname(String aSurname) {
+		return this.person.aSurname(aSurname);
+	}
+
+	public boolean hasUsername(String aUserName) {
+		return this.userName.equals(aUserName);
+	}
+
+	public String email() {
+		return this.email.asString();
 	}
 }
