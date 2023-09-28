@@ -27,13 +27,16 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
-public class ShowTime {
+class ShowTime {
 
 	static final String START_TIME_MUST_BE_IN_THE_FUTURE = "The show start time must be in the future";
 	static final String PRICE_MUST_BE_POSITIVE = "The price must be greater than zero";
 	static final String SELECTED_SEATS_ARE_BUSY = "All or some of the seats chosen are busy";
 	static final String RESERVATION_IS_REQUIRED_TO_CONFIRM = "Reservation is required before confirm";
 	private static final int DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE = 10;
+	static final String EMAIL_SUBJECT_SALE = "You have new tickets!";
+	// TODO: add email template
+	static final String EMAIL_BODY_SALE = "Body...";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -63,7 +66,7 @@ public class ShowTime {
 	// null if I don't set it here
 	private EmailProvider emailProvider = defaultProvider();
 
-	private int pointsThatAUserWinForEachPurchase = DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE;
+	private int pointsThatAUserWinForPurchaseThisShowTime = DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE;
 
 	public ShowTime(DateTimeProvider provider, Movie movie,
 			LocalDateTime startTime, float price, Theater screenedIn,
@@ -87,7 +90,7 @@ public class ShowTime {
 			int totalPointsToWin) {
 		this(provider, movie, startTime, price, screenedIn, payment,
 				emailProvider);
-		this.pointsThatAUserWinForEachPurchase = totalPointsToWin;
+		this.pointsThatAUserWinForPurchaseThisShowTime = totalPointsToWin;
 	}
 
 	public boolean isStartingAt(LocalDateTime of) {
@@ -112,7 +115,7 @@ public class ShowTime {
 		var selection = filterSelectedSeats(selectedSeats);
 		checkAllSelectedSeatsAreReservedBy(user, selection);
 		confirmAllSeatsFor(user, selection);
-		// TODO assert YearMont is in the future
+		// TODO assert YearMonth is in the future
 
 		// total amount
 		var totalAmount = Math.round(selectedSeats.size() * this.price * 100.0f)
@@ -122,13 +125,14 @@ public class ShowTime {
 		this.payment.pay(creditCardNumber, expirationDate, secturityCode,
 				totalAmount);
 
-		// new points for user
-		user.newEarnedPoints(this.pointsThatAUserWinForEachPurchase);
+		var sale = new Sale(totalAmount, user, this,
+				pointsThatAUserWinForPurchaseThisShowTime);
 
 		// send notifications
-		this.emailProvider.send(user.email(), creditCardNumber, secturityCode);
+		this.emailProvider.send(user.email(), EMAIL_SUBJECT_SALE,
+				EMAIL_BODY_SALE);
 
-		return new Sale(totalAmount, user, this);
+		return sale;
 	}
 
 	// public Set<ShowSeat> availableSeats() {

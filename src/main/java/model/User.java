@@ -1,11 +1,16 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -38,6 +43,9 @@ class User {
 	@Embedded
 	private Password password;
 
+	@OneToMany(cascade = CascadeType.PERSIST, mappedBy = "user")
+	private List<Sale> purchases;
+
 	private int points;
 
 	public User(Person person, String userName, String email, String password) {
@@ -46,6 +54,7 @@ class User {
 		this.password = new Password(password);
 		this.email = new Email(email);
 		this.points = 0;
+		this.purchases = new ArrayList<>();
 	}
 
 	boolean isPassword(String password) {
@@ -63,7 +72,7 @@ class User {
 		this.password = new Password(newPassword1);
 	}
 
-	public void newEarnedPoints(int points) {
+	void newEarnedPoints(int points) {
 		if (points <= 0) {
 			throw new BusinessException(POINTS_MUST_BE_GREATER_THAN_ZERO);
 		}
@@ -92,5 +101,10 @@ class User {
 
 	public String email() {
 		return this.email.asString();
+	}
+
+	void newPurchase(Sale sale, int pointsWon) {
+		this.newEarnedPoints(pointsWon);
+		this.purchases.add(sale);
 	}
 }

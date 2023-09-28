@@ -100,15 +100,34 @@ public class ShowTimeTest {
 	}
 
 	// TODO: test para validar que se invoco a payment y a email, y verificar el
-	// total de la venta
+	// total de la venta y el user tenga la venta en su collection
+
 	@Test
-	public void bla() {
-		var st = new ShowTime(DateTimeProvider.create(),
-				tests.createSmallFishMovie(),
-				LocalDateTime.of(2023, 10, 10, 15, 0, 0, 0), 10f,
-				new Theater("a Theater", Set.of(1, 2, 3, 4, 5, 6),
-						DateTimeProvider.create()),
-				null, null);
+	public void confirmAShowTime() {
+		var emailProvider = tests.createEmailProviderFake();
+		var paymentProvider = tests.createPaymenentProviderFake();
+
+		var aShow = tests.createShowTime(paymentProvider, emailProvider, 15);
+
+		var carlos = createCarlosUser();
+
+		var seatsToReserveByCarlos = Set.of(1, 2);
+		aShow.reserveSeatsFor(carlos, seatsToReserveByCarlos);
+
+		var seatsToConfirmByCarlos = Set.of(1, 2);
+
+		var expireCreditCardYearMonth = YearMonth
+				.of(LocalDate.now().getYear() + 1, 5);
+
+		var sale = aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos,
+				"creditCardNumber", expireCreditCardYearMonth, "securityCode");
+
+		assertTrue(sale.hasTotalOf(20));
+		assertTrue(sale.purchaseBy(carlos));
+		assertTrue(carlos.hasPoints(15));
+		assertTrue(emailProvider.hasBeanCalled(carlos.email(),
+				ShowTime.EMAIL_SUBJECT_SALE, ShowTime.EMAIL_BODY_SALE));
+		// assertTrue(paymentProvider.hasBeanCalled());
 	}
 
 	@Test

@@ -3,6 +3,7 @@ package model;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,19 +27,24 @@ class Sale {
 	private float total;
 	private LocalDateTime salesDate;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "id_user")
 	private User purchaser;
+
+	private int pointsWon;
 
 	@ManyToOne
 	@JoinColumn(name = "id_showtime")
 	private ShowTime soldShow;
 
-	public Sale(float totalAmount, User userThatPurchased, ShowTime soldShow) {
+	public Sale(float totalAmount, User userThatPurchased, ShowTime soldShow,
+			int pointsWon) {
 		this.total = totalAmount;
 		this.purchaser = userThatPurchased;
 		this.soldShow = soldShow;
 		this.salesDate = LocalDateTime.now();
+		this.pointsWon = pointsWon;
+		userThatPurchased.newPurchase(this, pointsWon);
 	}
 
 	public boolean hasTotalOf(float aTotal) {
@@ -49,4 +55,7 @@ class Sale {
 		return String.format("%i-%i", this.id, this.salesDate.getYear());
 	}
 
+	boolean purchaseBy(User aUser) {
+		return this.purchaser.equals(aUser);
+	}
 }
