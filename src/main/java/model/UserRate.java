@@ -1,5 +1,7 @@
 package model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -13,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import model.api.UserMovieRate;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,6 +38,7 @@ class UserRate {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "movie_id")
 	private Movie movie;
+	private LocalDateTime ratedAt;
 
 	public UserRate(User user, int value, String comment, Movie movie) {
 		checkValidRateValue(value);
@@ -43,6 +47,7 @@ class UserRate {
 		this.value = value;
 		this.comment = comment;
 		this.movie = movie;
+		this.ratedAt = LocalDateTime.now();
 	}
 
 	private void checkValidRateValue(int value) {
@@ -55,4 +60,9 @@ class UserRate {
 		return this.user.equals(aUser);
 	}
 
+	public UserMovieRate toUserMovieRate() {
+		// TODO: format date
+		return new UserMovieRate(this.user.userName(), value,
+				ratedAt.toString(), comment);
+	}
 }

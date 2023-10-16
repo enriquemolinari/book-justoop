@@ -58,7 +58,7 @@ class ShowSeat {
 		this.provider = dateProvider;
 	}
 
-	public void reserveFor(User user) {
+	public void doReserveForUser(User user) {
 		if (!isAvailable()) {
 			throw new BusinessException(SEAT_BUSY);
 		}
@@ -77,7 +77,7 @@ class ShowSeat {
 		return !reserved && !confirmed;
 	}
 
-	public void confirmFor(User user) {
+	public void doConfirmForUser(User user) {
 		if (!isReservedBy(user) || confirmed) {
 			throw new BusinessException(SEAT_NOT_RESERVED_OR_ALREADY_CONFIRMED);
 		}

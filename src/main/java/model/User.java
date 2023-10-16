@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -25,7 +26,7 @@ import lombok.Setter;
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"userName"})
-class User {
+public class User {
 
 	static final String CAN_NOT_CHANGE_PASSWORD = "Some of the provided information is not valid to change the password";
 	static final String POINTS_MUST_BE_GREATER_THAN_ZERO = "Points must be greater than zero";
@@ -35,24 +36,21 @@ class User {
 	private long id;
 	@Column(unique = true)
 	private String userName;
-	@OneToOne
+	@OneToOne(cascade = CascadeType.PERSIST)
 	private Person person;
-	@Embedded
-	private Email email;
-	// this must not escape by any means out of this object
+	// password must not escape by any means out of this object
 	@Embedded
 	private Password password;
 
-	@OneToMany(cascade = CascadeType.PERSIST, mappedBy = "user")
+	@OneToMany(cascade = CascadeType.PERSIST, mappedBy = "purchaser")
 	private List<Sale> purchases;
 
 	private int points;
 
-	public User(Person person, String userName, String email, String password) {
+	public User(Person person, String userName, String password) {
 		this.person = person;
 		this.userName = new NotBlankString(userName, "").value();
 		this.password = new Password(password);
-		this.email = new Email(email);
 		this.points = 0;
 		this.purchases = new ArrayList<>();
 	}
@@ -99,12 +97,16 @@ class User {
 		return this.userName.equals(aUserName);
 	}
 
-	public String email() {
-		return this.email.asString();
-	}
-
 	void newPurchase(Sale sale, int pointsWon) {
 		this.newEarnedPoints(pointsWon);
 		this.purchases.add(sale);
+	}
+
+	String email() {
+		return this.person.email();
+	}
+
+	public Map<String, String> toMap() {
+		return Map.of("username", this.userName);
 	}
 }

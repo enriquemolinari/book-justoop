@@ -1,5 +1,6 @@
 package model;
 
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
-class Person {
+public class Person {
 
 	static final String NAME_MUST_NOT_BE_BLANK = "Name must not be blank";
 	static final String SURNAME_MUST_NOT_BE_BLANK = "Surname must not be blank";
@@ -23,11 +24,14 @@ class Person {
 	private long id;
 	private String name;
 	private String surname;
+	@Embedded
+	private Email email;
 
-	public Person(String name, String surname) {
+	public Person(String name, String surname, String email) {
 		this.name = new NotBlankString(name, NAME_MUST_NOT_BE_BLANK).value();
 		this.surname = new NotBlankString(surname, SURNAME_MUST_NOT_BE_BLANK)
 				.value();
+		this.email = new Email(email);
 	}
 
 	public boolean isNamed(String aName) {
@@ -44,5 +48,9 @@ class Person {
 
 	public boolean aSurname(String aSurname) {
 		return this.surname.equals(aSurname);
+	}
+
+	String email() {
+		return this.email.asString();
 	}
 }

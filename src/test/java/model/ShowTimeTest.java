@@ -5,9 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -23,8 +21,7 @@ public class ShowTimeTest {
 					tests.createSmallFishMovie(),
 					LocalDateTime.of(2023, 03, 10, 15, 0, 0, 0), 10f,
 					new Theater("A Theater", Set.of(1),
-							DateTimeProvider.create()),
-					tests.emptyPayment(), tests.emptyProvider());
+							DateTimeProvider.create()));
 		});
 
 		assertEquals(e.getMessage(), ShowTime.START_TIME_MUST_BE_IN_THE_FUTURE);
@@ -35,10 +32,8 @@ public class ShowTimeTest {
 		Exception e = assertThrows(BusinessException.class, () -> {
 			new ShowTime(DateTimeProvider.create(),
 					tests.createSmallFishMovie(),
-					LocalDateTime.now().plusDays(1), 0f,
-					new Theater("A Theater", Set.of(1),
-							DateTimeProvider.create()),
-					tests.emptyPayment(), tests.emptyProvider());
+					LocalDateTime.now().plusDays(1), 0f, new Theater(
+							"A Theater", Set.of(1), DateTimeProvider.create()));
 		});
 
 		assertEquals(e.getMessage(), ShowTime.PRICE_MUST_BE_POSITIVE);
@@ -103,34 +98,6 @@ public class ShowTimeTest {
 	// total de la venta y el user tenga la venta en su collection
 
 	@Test
-	public void confirmAShowTime() {
-		var emailProvider = tests.createEmailProviderFake();
-		var paymentProvider = tests.createPaymenentProviderFake();
-
-		var aShow = tests.createShowTime(paymentProvider, emailProvider, 15);
-
-		var carlos = createCarlosUser();
-
-		var seatsToReserveByCarlos = Set.of(1, 2);
-		aShow.reserveSeatsFor(carlos, seatsToReserveByCarlos);
-
-		var seatsToConfirmByCarlos = Set.of(1, 2);
-
-		var expireCreditCardYearMonth = YearMonth
-				.of(LocalDate.now().getYear() + 1, 5);
-
-		var sale = aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos,
-				"creditCardNumber", expireCreditCardYearMonth, "securityCode");
-
-		assertTrue(sale.hasTotalOf(20));
-		assertTrue(sale.purchaseBy(carlos));
-		assertTrue(carlos.hasPoints(15));
-		assertTrue(emailProvider.hasBeanCalled(carlos.email(),
-				ShowTime.EMAIL_SUBJECT_SALE, ShowTime.EMAIL_BODY_SALE));
-		// assertTrue(paymentProvider.hasBeanCalled());
-	}
-
-	@Test
 	public void confirmReservedSeats() {
 		var aShow = tests.createShowForSmallFish();
 		var carlos = createCarlosUser();
@@ -139,9 +106,7 @@ public class ShowTimeTest {
 		aShow.reserveSeatsFor(carlos, seatsToReserveByCarlos);
 
 		var seatsToConfirmByCarlos = Set.of(1, 2);
-		aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos,
-				"creditCardNumber",
-				YearMonth.of(LocalDate.now().getYear() + 1, 5), "securityCode");
+		aShow.confirmSeatsForUser(carlos, seatsToConfirmByCarlos);
 
 		assertTrue(
 				aShow.areAllSeatsConfirmedBy(carlos, seatsToConfirmByCarlos));
@@ -168,10 +133,7 @@ public class ShowTimeTest {
 		var seatsToConfirmByCarlos = Set.of(5, 6, 7);
 
 		Exception e = assertThrows(BusinessException.class, () -> {
-			aShow.confirmSeatsFor(carlos, seatsToConfirmByCarlos,
-					"creditCardNumber",
-					YearMonth.of(LocalDate.now().getYear() + 1, 5),
-					"securityCode");
+			aShow.confirmSeatsForUser(carlos, seatsToConfirmByCarlos);
 		});
 
 		assertEquals(e.getMessage(),
@@ -182,12 +144,12 @@ public class ShowTimeTest {
 	}
 
 	private User createCarlosUser() {
-		return new User(new Person("Carlos", "Garzia"), "cgarzia",
-				"cgarzia@my.com", "123456789101112");
+		return new User(new Person("Carlos", "Garzia", "cgarzia@my.com"),
+				"cgarzia", "123456789101112");
 	}
 
 	private User createJoseUser() {
-		return new User(new Person("Jose", "Lopiz"), "jlopiz", "jlopiz@my.com",
+		return new User(new Person("Jose", "Lopiz", "jlopiz@my.com"), "jlopiz",
 				"123456789101112");
 	}
 

@@ -1,5 +1,6 @@
 package model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
-class Actor {
+public class Actor {
 
 	public static final String NAME_INVALID = "name must not be blank";
 	public static final String CHARACTER_NAME_INVALID = "character name must not be blank";
@@ -23,7 +24,7 @@ class Actor {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "id_person")
 	private Person person;
 	private String characterName;
@@ -40,5 +41,13 @@ class Actor {
 
 	public boolean hasCharacterName(String aCharacterName) {
 		return this.characterName.equals(aCharacterName);
+	}
+
+	String fullName() {
+		return this.person.fullName();
+	}
+
+	String characterName() {
+		return this.characterName;
 	}
 }

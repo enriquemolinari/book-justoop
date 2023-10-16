@@ -22,8 +22,7 @@ import lombok.Setter;
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = {"name"})
-public
-class Theater {
+public class Theater {
 
 	static final String NAME_INVALID = "Theater name cannot be blank";
 
@@ -36,10 +35,7 @@ class Theater {
 	// This allows testing
 	private DateTimeProvider provider = DateTimeProvider.create();
 
-	// @OneToMany(cascade = CascadeType.PERSIST)
-	// @JoinColumn(name = "theater_id")
-	// private Set<Seat> seats;
-	@ElementCollection(fetch = FetchType.EAGER)
+	@ElementCollection(fetch = FetchType.LAZY)
 	private Set<Integer> seatNumbers;
 
 	public Theater(String name, Set<Integer> seats, DateTimeProvider provider) {
@@ -52,5 +48,9 @@ class Theater {
 		return this.seatNumbers.stream()
 				.map(s -> new ShowSeat(show, s, this.provider))
 				.collect(Collectors.toUnmodifiableSet());
+	}
+
+	String name() {
+		return name;
 	}
 }

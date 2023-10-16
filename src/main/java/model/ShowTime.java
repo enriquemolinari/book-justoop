@@ -1,42 +1,38 @@
 package model;
 
-import static model.CreditCardPaymentGateway.defaultGateway;
-import static model.EmailProvider.defaultProvider;
-
 import java.time.LocalDateTime;
-import java.time.YearMonth;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import model.api.ShowInfo;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
-class ShowTime {
+public class ShowTime {
 
 	static final String START_TIME_MUST_BE_IN_THE_FUTURE = "The show start time must be in the future";
 	static final String PRICE_MUST_BE_POSITIVE = "The price must be greater than zero";
 	static final String SELECTED_SEATS_ARE_BUSY = "All or some of the seats chosen are busy";
 	static final String RESERVATION_IS_REQUIRED_TO_CONFIRM = "Reservation is required before confirm";
 	private static final int DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE = 10;
-	static final String EMAIL_SUBJECT_SALE = "You have new tickets!";
-	// TODO: add email template
-	static final String EMAIL_BODY_SALE = "Body...";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -48,49 +44,42 @@ class ShowTime {
 	// null if I don't initialize it here.
 	private DateTimeProvider timeProvider = DateTimeProvider.create();
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "id_movie")
 	private Movie movieToBeScreened;
 	private float price;
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	private Theater screenedIn;
 	@OneToMany(mappedBy = "show", cascade = CascadeType.PERSIST)
 	private Set<ShowSeat> seatsForThisShow;
-
-	@Transient
-	// When ShowTime is retrieved from DB by Hibernate, this collaborator is
-	// null if I don't set it here
-	private CreditCardPaymentGateway payment = defaultGateway();
-
-	@Transient
-	// When ShowTime is retrieved from DB by Hibernate, this collaborator is
-	// null if I don't set it here
-	private EmailProvider emailProvider = defaultProvider();
-
-	private int pointsThatAUserWinForPurchaseThisShowTime = DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE;
+	@Column(name = "pointsToWin")
+	private int pointsThatAUserWin;
 
 	public ShowTime(DateTimeProvider provider, Movie movie,
-			LocalDateTime startTime, float price, Theater screenedIn,
-			CreditCardPaymentGateway payment, EmailProvider emailProvider) {
-		this.timeProvider = provider;
-		this.movieToBeScreened = movie;
-		checkStartTimeIsInTheFuture(startTime);
-		checkPriceIsPositiveAndNotFree(price);
+			LocalDateTime startTime, float price, Theater screenedIn) {
+		this(provider, movie, startTime, price, screenedIn,
+				DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE);
+	}
 
-		this.price = price;
-		this.startTime = startTime;
-		this.screenedIn = screenedIn;
-		this.seatsForThisShow = screenedIn.seatsForShow(this);
-		this.payment = payment;
-		this.emailProvider = emailProvider;
+	public ShowTime(Movie movie, LocalDateTime startTime, float price,
+			Theater screenedIn, int totalPointsToWin) {
+		this(DateTimeProvider.create(), movie, startTime, price, screenedIn,
+				totalPointsToWin);
 	}
 
 	public ShowTime(DateTimeProvider provider, Movie movie,
 			LocalDateTime startTime, float price, Theater screenedIn,
-			CreditCardPaymentGateway payment, EmailProvider emailProvider,
 			int totalPointsToWin) {
-		this(provider, movie, startTime, price, screenedIn, payment,
-				emailProvider);
-		this.pointsThatAUserWinForPurchaseThisShowTime = totalPointsToWin;
+		this.timeProvider = provider;
+		this.movieToBeScreened = movie;
+		checkStartTimeIsInTheFuture(startTime);
+		checkPriceIsPositiveAndNotFree(price);
+		// TODO: validate showtime is in future compare to release date...
+		this.price = price;
+		this.startTime = startTime;
+		this.screenedIn = screenedIn;
+		this.seatsForThisShow = screenedIn.seatsForShow(this);
+		this.pointsThatAUserWin = totalPointsToWin;
 	}
 
 	public boolean isStartingAt(LocalDateTime of) {
@@ -103,42 +92,26 @@ class ShowTime {
 				.collect(Collectors.toUnmodifiableSet());
 	}
 
-	public void reserveSeatsFor(User user, Set<Integer> selectedSeats) {
+	// package protected scope to not be called from outside this package
+	void reserveSeatsFor(User user, Set<Integer> selectedSeats) {
 		var selection = filterSelectedSeats(selectedSeats);
 		checkAllSelectedSeatsAreAvailable(selection);
 		reserveAllSeatsFor(user, selection);
 	}
 
-	public Sale confirmSeatsFor(User user, Set<Integer> selectedSeats,
-			String creditCardNumber, YearMonth expirationDate,
-			String secturityCode) {
+	int pointsToEarn() {
+		return this.pointsThatAUserWin;
+	}
+
+	float totalAmountForTheseSeats(Set<Integer> selectedSeats) {
+		return Math.round(selectedSeats.size() * this.price * 100.0f) / 100.0f;
+	}
+
+	void confirmSeatsForUser(User user, Set<Integer> selectedSeats) {
 		var selection = filterSelectedSeats(selectedSeats);
 		checkAllSelectedSeatsAreReservedBy(user, selection);
 		confirmAllSeatsFor(user, selection);
-		// TODO assert YearMonth is in the future
-
-		// total amount
-		var totalAmount = Math.round(selectedSeats.size() * this.price * 100.0f)
-				/ 100.0f;
-
-		// do payment
-		this.payment.pay(creditCardNumber, expirationDate, secturityCode,
-				totalAmount);
-
-		var sale = new Sale(totalAmount, user, this,
-				pointsThatAUserWinForPurchaseThisShowTime);
-
-		// send notifications
-		this.emailProvider.send(user.email(), EMAIL_SUBJECT_SALE,
-				EMAIL_BODY_SALE);
-
-		return sale;
 	}
-
-	// public Set<ShowSeat> availableSeats() {
-	// // return the showtime's seats busy and available
-	// return null;
-	// }
 
 	private void checkPriceIsPositiveAndNotFree(float price) {
 		if (price <= 0) {
@@ -192,11 +165,11 @@ class ShowTime {
 	}
 
 	private void reserveAllSeatsFor(User user, Set<ShowSeat> selection) {
-		selection.stream().forEach(seat -> seat.reserveFor(user));
+		selection.stream().forEach(seat -> seat.doReserveForUser(user));
 	}
 
 	private void confirmAllSeatsFor(User user, Set<ShowSeat> selection) {
-		selection.stream().forEach(seat -> seat.confirmFor(user));
+		selection.stream().forEach(seat -> seat.doConfirmForUser(user));
 	}
 
 	private void checkAllSelectedSeatsAreAvailable(Set<ShowSeat> selection) {
@@ -209,6 +182,19 @@ class ShowTime {
 		checkAtLeastOneMatchConditionFor(selection,
 				seat -> !seat.isReservedBy(user),
 				RESERVATION_IS_REQUIRED_TO_CONFIRM);
+	}
+
+	String movieName() {
+		return this.movieToBeScreened.name();
+	}
+
+	String startDateTime() {
+		return new FormattedDateTime(this.startTime).toString();
+	}
+
+	public ShowInfo toShowInfo() {
+		return new ShowInfo(this.id, this.startTime, this.screenedIn.name(),
+				this.price);
 	}
 
 }

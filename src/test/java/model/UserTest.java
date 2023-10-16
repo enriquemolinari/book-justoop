@@ -18,16 +18,19 @@ public class UserTest {
 	}
 
 	private User createUserEnrique() {
-		var u = new User(new Person("Enrique", "Molinari"), "enriquemolinari",
-				"enrique.molinari@gmail.com", "Ab138RtoUjkL");
+		var u = new User(
+				new Person("Enrique", "Molinari", "enrique.molinari@gmail.com"),
+				"enriquemolinari", "Ab138RtoUjkL");
 		return u;
 	}
 
 	@Test
 	public void userEmailIsInvalid() {
 		Exception e = assertThrows(BusinessException.class, () -> {
-			new User(new Person("Enrique", "Molinari"), "emolinari",
-					"enrique.molinarigmail.com", "Ab138RtoUjkL");
+			new User(
+					new Person("Enrique", "Molinari",
+							"enrique.molinarigmail.com"),
+					"emolinari", "Ab138RtoUjkL");
 		});
 
 		assertTrue(e.getMessage().equals(Email.NOT_VALID_EMAIL));
@@ -36,8 +39,10 @@ public class UserTest {
 	@Test
 	public void userPasswordIsInvalid() {
 		Exception e = assertThrows(BusinessException.class, () -> {
-			new User(new Person("Enrique", "Molinari"), "emolinari",
-					"enrique.molinari@gmail.com", "abcAdif");
+			new User(
+					new Person("Enrique", "Molinari",
+							"enrique.molinari@gmail.com"),
+					"emolinari", "abcAdif");
 		});
 
 		assertTrue(e.getMessage().equals(Password.NOT_VALID_PASSWORD));

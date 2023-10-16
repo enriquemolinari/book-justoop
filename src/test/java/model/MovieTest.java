@@ -10,6 +10,8 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import model.api.Genre;
+
 public class MovieTest {
 
 	private final ForTests tests = new ForTests();
@@ -31,11 +33,14 @@ public class MovieTest {
 	@Test
 	public void movieNameIsInvalid() {
 		Exception e = assertThrows(BusinessException.class, () -> {
-			new Movie("  ", 102, LocalDate.of(2023, 10, 10) /* release data */,
+			new Movie("  ", "plot ...", 102,
+					LocalDate.of(2023, 10, 10) /* release data */,
 					Set.of(Genre.COMEDY, Genre.ACTION)/* genre */,
-					Set.of(new Actor(new Person("aName", "aSurname"),
+					List.of(new Actor(
+							new Person("aName", "aSurname", "anEmail@mail.com"),
 							"George Bix")),
-					Set.of(new Person("aDName", "aDSurname")),
+					List.of(new Person("aDName", "aDSurname",
+							"anotherEmail@mail.com")),
 					(user, movie) -> {
 						return false;
 					});
@@ -47,12 +52,14 @@ public class MovieTest {
 	@Test
 	public void durationIsInvalid() {
 		Exception e = assertThrows(BusinessException.class, () -> {
-			new Movie("Small Fish", 0,
+			new Movie("Small Fish", "plot...", 0,
 					LocalDate.of(2023, 10, 10) /* release data */,
 					Set.of(Genre.COMEDY, Genre.ACTION)/* genre */,
-					Set.of(new Actor(new Person("aName", "aSurname"),
+					List.of(new Actor(
+							new Person("aName", "aSurname", "anEmail@mail.com"),
 							"George Bix")),
-					Set.of(new Person("aDName", "aDSurname")),
+					List.of(new Person("aDName", "aDSurname",
+							"anotherEmail@mail.com")),
 					(user, movie) -> {
 						return false;
 					});
@@ -64,12 +71,14 @@ public class MovieTest {
 	@Test
 	public void genreIsInvalid() {
 		Exception e = assertThrows(BusinessException.class, () -> {
-			new Movie("Small Fish", 100,
+			new Movie("Small Fish", "plot...", 100,
 					LocalDate.of(2023, 10, 10) /* release data */,
 					Set.of()/* genre */,
-					Set.of(new Actor(new Person("aName", "aSurname"),
+					List.of(new Actor(
+							new Person("aName", "aSurname", "anEmail@mail.com"),
 							"George Bix")),
-					Set.of(new Person("aDName", "aDSurname")),
+					List.of(new Person("aDName", "aDSurname",
+							"anotherEmail@mail.com")),
 					(user, movie) -> {
 						return false;
 					});
@@ -79,45 +88,18 @@ public class MovieTest {
 	}
 
 	@Test
-	public void actorsIsInvalid() {
-		Exception e = assertThrows(BusinessException.class, () -> {
-			new Movie("Small Fish", 100,
-					LocalDate.of(2023, 10, 10) /* release data */,
-					Set.of(Genre.ACTION)/* genre */, Set.of(),
-					Set.of(new Person("aDName", "aDSurname")),
-					(user, movie) -> {
-						return false;
-					});
-		});
-		assertTrue(e.getMessage().equals(Movie.ACTORS_INVALID));
-	}
-
-	@Test
-	public void directorsIsInvalid() {
-		Exception e = assertThrows(BusinessException.class, () -> {
-			new Movie("Small Fish", 100,
-					LocalDate.of(2023, 10, 10) /* release data */,
-					Set.of(Genre.ACTION)/* genre */,
-					Set.of(new Actor(new Person("aName", "aSurname"),
-							"George Bix")),
-					Set.of(), (user, movie) -> {
-						return false;
-					});
-		});
-
-		assertTrue(e.getMessage().equals(Movie.DIRECTORS_INVALID));
-	}
-
-	@Test
 	public void directorsWithBlankNames() {
 		Exception e = assertThrows(BusinessException.class, () -> {
-			new Movie("Small Fish", 100,
+			new Movie("Small Fish", "plot...", 100,
 					LocalDate.of(2023, 10, 10) /* release data */,
 					Set.of(Genre.ACTION)/* genre */,
-					Set.of(new Actor(new Person("aName", "aSurname"),
+					List.of(new Actor(
+							new Person("aName", "aSurname", "anEmail@mail.com"),
 							"George Bix")),
-					Set.of(new Person(" ", "aSurname"),
-							new Person("aName", "aSurname")),
+					List.of(new Person(" ", "aSurname",
+							"anotherEmail@mail.com"),
+							new Person("aName", "aSurname",
+									"anotherOtherEmail@mail.com")),
 					(user, movie) -> {
 						return false;
 					});

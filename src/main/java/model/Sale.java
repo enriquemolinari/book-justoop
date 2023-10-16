@@ -13,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import model.api.Ticket;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -51,11 +52,20 @@ class Sale {
 		return this.total == aTotal;
 	}
 
-	public String salesNumber() {
+	private String salesNumber() {
 		return String.format("%i-%i", this.id, this.salesDate.getYear());
+	}
+
+	private String formattedSalesDate() {
+		return new FormattedDateTime(salesDate).toString();
 	}
 
 	boolean purchaseBy(User aUser) {
 		return this.purchaser.equals(aUser);
+	}
+
+	public Ticket ticket() {
+		return new Ticket(salesNumber(), total, pointsWon, formattedSalesDate(),
+				purchaser.userName());
 	}
 }

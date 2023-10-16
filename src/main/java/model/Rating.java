@@ -16,10 +16,8 @@ class Rating {
 	private float rateValue = 0;
 	private float totalValue = 0;
 
-	public Rating(float value) {
-		this.totalUserVotes = 1;
-		this.rateValue = value;
-		this.totalValue = value;
+	public static Rating notRatedYet() {
+		return new Rating();
 	}
 
 	public void calculaNewRate(int newUserRate) {
@@ -33,10 +31,6 @@ class Rating {
 
 	public float actualRate() {
 		return this.rateValue;
-	}
-
-	static Rating notRatedYet() {
-		return new Rating();
 	}
 
 	boolean hasValue(float aValue) {
