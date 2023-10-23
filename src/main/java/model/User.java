@@ -30,6 +30,7 @@ public class User {
 
 	static final String CAN_NOT_CHANGE_PASSWORD = "Some of the provided information is not valid to change the password";
 	static final String POINTS_MUST_BE_GREATER_THAN_ZERO = "Points must be greater than zero";
+	static final String PASSWORDS_MUST_BE_EQUALS = "Passwords must be equals";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -47,7 +48,9 @@ public class User {
 
 	private int points;
 
-	public User(Person person, String userName, String password) {
+	public User(Person person, String userName, String password,
+			String repeatPassword) {
+		checkPasswordsMatch(password, repeatPassword);
 		this.person = person;
 		this.userName = new NotBlankString(userName, "").value();
 		this.password = new Password(password);
@@ -55,18 +58,23 @@ public class User {
 		this.purchases = new ArrayList<>();
 	}
 
-	boolean isPassword(String password) {
+	private void checkPasswordsMatch(String password, String repeatPassword) {
+		if (!password.equals(repeatPassword)) {
+			throw new BusinessException(PASSWORDS_MUST_BE_EQUALS);
+		}
+	}
+
+	boolean hasPassword(String password) {
 		return this.password.equals(new Password(password));
 	}
 
 	public void changePassword(String currentPassword, String newPassword1,
 			String newPassword2) {
-		if (!isPassword(currentPassword)) {
+		if (!hasPassword(currentPassword)) {
 			throw new BusinessException(CAN_NOT_CHANGE_PASSWORD);
 		}
-		if (!newPassword1.equals(newPassword2)) {
-			throw new BusinessException(CAN_NOT_CHANGE_PASSWORD);
-		}
+		checkPasswordsMatch(newPassword2, newPassword1);
+
 		this.password = new Password(newPassword1);
 	}
 
@@ -108,5 +116,9 @@ public class User {
 
 	public Map<String, String> toMap() {
 		return Map.of("username", this.userName);
+	}
+
+	Long id() {
+		return id;
 	}
 }

@@ -10,48 +10,52 @@ import java.util.Set;
 // sino, si lo hago a nivel Web, y quiero mover a Javalin u otro, duplico esta logica.
 public interface CinemaSystem {
 
-	public List<MovieShows> showsUntil(LocalDateTime untilTo);
+	List<MovieShows> showsUntil(LocalDateTime untilTo);
 
-	public List<MovieInfo> moviesSortedByName();
+	List<MovieInfo> moviesSortedByName(int pageNumber);
 
-	DetailedMovieInfo movie(Long id);
+	MovieInfo movie(Long id);
 
-	public MovieInfo addNewMovie(String name, int duration,
+	MovieInfo addNewMovie(String name, int duration,
 			LocalDate releaseDate, String plot, Set<Genre> genres);
 
-	public MovieInfo addActorToMovie(Long movieId, String name, String surname,
+	MovieInfo addActorToMovie(Long movieId, String name, String surname,
 			String email, String characterName);
 
-	public MovieInfo addDirectorToMovie(Long movieId, String name,
+	MovieInfo addDirectorToMovie(Long movieId, String name,
 			String surname, String email);
 
-	public ShowInfo addNewShowToMovie(Long movieId, LocalDateTime startTime,
+	Long addNewTheater(String name, Set<Integer> seatsNumbers);
+
+	ShowInfo addNewShowToMovie(Long movieId, LocalDateTime startTime,
 			float price, Long theaterId, int pointsToWin);
 
-	// showById
+	DetailedShowInfo reserve(Long userId, Long showTimeId,
+			Set<Integer> selectedSeats);
 
-	// pay
-	// TODO: replace with authentication token
-	public Ticket pay(Long userId, Long showTimeId, Set<Integer> selectedSeats,
+	Ticket pay(Long userId, Long showTimeId, Set<Integer> selectedSeats,
 			String creditCardNumber, YearMonth expirationDate,
 			String secturityCode);
 
-	// reserve
+	UserMovieRate rateMovieBy(Long userId, Long idMovie, int rateValue,
+			String comment);
 
-	// void rateMovie(Long userId, Long idMovie, int rateValu, String comment);
+	List<UserMovieRate> pagedRatesOfOrderedDate(Long movieId, int pageNumber);
 
-	// public RatingRecord rating(Long idMovie);
+	List<MovieInfo> pagedMoviesOrderedByRate(int pageNumber);
+
+	// search Movie by name
+
+	// showById
 
 	// UserRecord login(String username, String password);
 
-	// Long userIdFrom(String token) throws UnauthorizedException;
+	// (private en Cinema) Long userIdFrom(String token) throws
+	// UnauthorizedException;
 
 	// Profile profileFromUser(userId)
 
-	// register User
-
-	// create Movie
-
-	// addShowToMovie
-
+	Long registerUser(String name, String surname, String email,
+			String userName,
+			String password, String repeatPassword);
 }

@@ -1,6 +1,7 @@
 package model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -20,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import model.api.DetailedShowInfo;
 import model.api.ShowInfo;
 
 @Entity
@@ -33,6 +35,7 @@ public class ShowTime {
 	static final String SELECTED_SEATS_ARE_BUSY = "All or some of the seats chosen are busy";
 	static final String RESERVATION_IS_REQUIRED_TO_CONFIRM = "Reservation is required before confirm";
 	private static final int DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE = 10;
+	static final String SHOW_START_TIME_MUST_BE_AFTER_MOVIE_RELEASE_DATE = "Show start time must be before movie release date";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -74,12 +77,20 @@ public class ShowTime {
 		this.movieToBeScreened = movie;
 		checkStartTimeIsInTheFuture(startTime);
 		checkPriceIsPositiveAndNotFree(price);
-		// TODO: validate showtime is in future compare to release date...
+		checkShowStartDateIsGreateThanReleaseDate(startTime, movie);
 		this.price = price;
 		this.startTime = startTime;
 		this.screenedIn = screenedIn;
 		this.seatsForThisShow = screenedIn.seatsForShow(this);
 		this.pointsThatAUserWin = totalPointsToWin;
+	}
+
+	private void checkShowStartDateIsGreateThanReleaseDate(
+			LocalDateTime startTime, Movie movie) {
+		if (startTime.isBefore(movie.releaseDateAsDateTime())) {
+			throw new BusinessException(
+					SHOW_START_TIME_MUST_BE_AFTER_MOVIE_RELEASE_DATE);
+		}
 	}
 
 	public boolean isStartingAt(LocalDateTime of) {
@@ -189,12 +200,23 @@ public class ShowTime {
 	}
 
 	String startDateTime() {
-		return new FormattedDateTime(this.startTime).toString();
+		return new DayTimeFormatted(this.startTime).toString();
 	}
 
 	public ShowInfo toShowInfo() {
 		return new ShowInfo(this.id, this.startTime, this.screenedIn.name(),
 				this.price);
+	}
+
+	public DetailedShowInfo toDetailedInfo() {
+		return new DetailedShowInfo(this.toShowInfo(),
+				this.seatsForThisShow.stream().map(s -> s.toSeat()).toList());
+	}
+
+	public List<Integer> confirmedSeatsFrom(User purchaser) {
+		return this.seatsForThisShow.stream()
+				.filter(seat -> seat.isConfirmedBy(purchaser))
+				.map(seat -> seat.seatNumber()).toList();
 	}
 
 }

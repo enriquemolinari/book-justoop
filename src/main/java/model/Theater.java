@@ -44,6 +44,10 @@ public class Theater {
 		this.provider = provider;
 	}
 
+	public Theater(String name, Set<Integer> seats) {
+		this(name, seats, DateTimeProvider.create());
+	}
+
 	Set<ShowSeat> seatsForShow(ShowTime show) {
 		return this.seatNumbers.stream()
 				.map(s -> new ShowSeat(show, s, this.provider))
@@ -52,5 +56,9 @@ public class Theater {
 
 	String name() {
 		return name;
+	}
+
+	Long id() {
+		return id;
 	}
 }

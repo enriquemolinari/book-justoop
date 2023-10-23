@@ -9,11 +9,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import model.api.ActorInMovieName;
 import model.api.CreditCardPaymentGateway;
 import model.api.EmailProvider;
 import model.api.Genre;
+import model.api.MovieInfo;
 
 public class ForTests {
+
+	static final String SUPER_MOVIE_PLOT = "a super movie that shows the life of ...";
+	static final String SUPER_MOVIE_NAME = "a super movie";
+	static final String OTHER_SUPER_MOVIE_NAME = "another super movie";
+	static final String SUPER_MOVIE_DIRECTOR_NAME = "aDirectorName surname";
+	static final ActorInMovieName SUPER_MOVIE_ACTOR_CARLOS = new ActorInMovieName(
+			"Carlos Kalchi",
+			"aCharacterName");
 
 	EmailProviderFake fakeEmailProvider() {
 		return new EmailProviderFake();
@@ -57,17 +67,18 @@ public class ForTests {
 	}
 
 	Movie createSmallFishMovie() {
+		return createSmallFishMovie(LocalDate.of(2023, 10, 10));
+	}
+
+	Movie createSmallFishMovie(LocalDate releaseDate) {
 		return new Movie("Small Fish", "plot x", 102,
-				LocalDate.of(2023, 10, 10) /* release data */,
+				releaseDate,
 				Set.of(Genre.COMEDY, Genre.ACTION)/* genre */,
 				List.of(new Actor(
 						new Person("aName", "aSurname", "anEmail@mail.com"),
 						"George Bix")),
 				List.of(new Person("aDirectorName", "aDirectorSurname",
-						"anotherEmail@mail.com")),
-				(user, movie) -> {
-					return false;
-				});
+						"anotherEmail@mail.com")));
 	}
 
 	EmailProvider doNothingEmailProvider() {
@@ -88,8 +99,7 @@ public class ForTests {
 						new Person("aName", "aSurname", "anEmail@mail.com"),
 						"George Bix")),
 				List.of(new Person("aDirectorName", "aDirectorSurname",
-						"anotherEmail@mail.com")),
-				InMemoryUsersRating.carlosRatedSmallFish());
+						"anotherEmail@mail.com")));
 	}
 
 	ShowTime createShowForSmallFish(DateTimeProvider provider) {
@@ -104,23 +114,57 @@ public class ForTests {
 
 	User createUserCharly() {
 		return new User(new Person("Carlos", "Edgun", "cedgun@mysite.com"),
-				"cedgun", "afbcdefghigg");
+				"cedgun", "afbcdefghigg", "afbcdefghigg");
 	}
 
 	User createUserJoseph() {
 		return new User(new Person("Joseph", "Valdun", "jvaldun@wabla.com"),
-				"jvaldun", "tabcd1234igg");
+				"jvaldun", "tabcd1234igg", "tabcd1234igg");
 	}
 
 	User createUserNicolas() {
 		return new User(
 				new Person("Nicolas", "Molinari", "nmolinari@yesmy.com"),
-				"nmolinari", "oneplayminebrawl");
+				"nmolinari", "oneplayminebrawl", "oneplayminebrawl");
 	}
+
+	MovieInfo createSuperMovie(Cinema cinema) {
+		var movieInfo = cinema.addNewMovie(SUPER_MOVIE_NAME, 109,
+				LocalDate.of(2023, 04, 05),
+				SUPER_MOVIE_PLOT,
+				Set.of(Genre.ACTION, Genre.ADVENTURE));
+
+		cinema.addActorToMovie(movieInfo.id(), "Carlos", "Kalchi",
+				"carlosk@bla.com", "aCharacterName");
+
+		cinema.addActorToMovie(movieInfo.id(), "Jose", "Hermes",
+				"jose@bla.com", "anotherCharacterName");
+
+		cinema.addDirectorToMovie(movieInfo.id(), "aDirectorName", "surname",
+				"adir@bla.com");
+
+		return movieInfo;
+	}
+
+	MovieInfo createOtherSuperMovie(Cinema cinema) {
+		var movieInfo = cinema.addNewMovie(OTHER_SUPER_MOVIE_NAME, 80,
+				LocalDate.of(2022, 04, 05),
+				"other super movie ...",
+				Set.of(Genre.COMEDY, Genre.FANTASY));
+
+		cinema.addActorToMovie(movieInfo.id(), "Nico", "Cochix",
+				"nico@bla.com", "super Character Name");
+
+		cinema.addDirectorToMovie(movieInfo.id(), "aSuper DirectorName",
+				"sur name",
+				"asuper@bla.com");
+
+		return movieInfo;
+	}
+
 }
 
 class EmailProviderFake implements EmailProvider {
-
 	private String to;
 	private String subject;
 	private String body;

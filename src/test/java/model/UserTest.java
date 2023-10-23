@@ -11,7 +11,7 @@ public class UserTest {
 	public void userCanBeCreated() {
 		var u = createUserEnrique();
 
-		assertTrue(u.isPassword("Ab138RtoUjkL"));
+		assertTrue(u.hasPassword("Ab138RtoUjkL"));
 		assertTrue(u.hasName("Enrique"));
 		assertTrue(u.hasSurname("Molinari"));
 		assertTrue(u.hasUsername("enriquemolinari"));
@@ -20,7 +20,7 @@ public class UserTest {
 	private User createUserEnrique() {
 		var u = new User(
 				new Person("Enrique", "Molinari", "enrique.molinari@gmail.com"),
-				"enriquemolinari", "Ab138RtoUjkL");
+				"enriquemolinari", "Ab138RtoUjkL", "Ab138RtoUjkL");
 		return u;
 	}
 
@@ -30,10 +30,22 @@ public class UserTest {
 			new User(
 					new Person("Enrique", "Molinari",
 							"enrique.molinarigmail.com"),
-					"emolinari", "Ab138RtoUjkL");
+					"emolinari", "Ab138RtoUjkL", "Ab138RtoUjkL");
 		});
 
 		assertTrue(e.getMessage().equals(Email.NOT_VALID_EMAIL));
+	}
+
+	@Test
+	public void userPasswordsDoesNotMatch() {
+		Exception e = assertThrows(BusinessException.class, () -> {
+			new User(
+					new Person("Enrique", "Molinari",
+							"enrique.molinari@gmail.com"),
+					"emolinari", "Ab138RtoUjkL", "Ab13RtoUjkL");
+		});
+
+		assertTrue(e.getMessage().equals(User.PASSWORDS_MUST_BE_EQUALS));
 	}
 
 	@Test
@@ -42,7 +54,7 @@ public class UserTest {
 			new User(
 					new Person("Enrique", "Molinari",
 							"enrique.molinari@gmail.com"),
-					"emolinari", "abcAdif");
+					"emolinari", "abcAdif", "abcAdif");
 		});
 
 		assertTrue(e.getMessage().equals(Password.NOT_VALID_PASSWORD));
@@ -67,7 +79,7 @@ public class UserTest {
 			u.changePassword("Ab138RtoUjkL", "Abcdefghrjkl", "Abcdefghijkl");
 		});
 
-		assertTrue(e.getMessage().equals(User.CAN_NOT_CHANGE_PASSWORD));
+		assertTrue(e.getMessage().equals(User.PASSWORDS_MUST_BE_EQUALS));
 	}
 
 	@Test
@@ -87,7 +99,7 @@ public class UserTest {
 
 		u.changePassword("Ab138RtoUjkL", "Abcdefghijkl", "Abcdefghijkl");
 
-		assertTrue(u.isPassword("Abcdefghijkl"));
+		assertTrue(u.hasPassword("Abcdefghijkl"));
 	}
 
 	@Test

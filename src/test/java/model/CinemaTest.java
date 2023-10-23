@@ -1,94 +1,321 @@
 package model;
 
+import static model.ForTests.SUPER_MOVIE_ACTOR_CARLOS;
+import static model.ForTests.SUPER_MOVIE_DIRECTOR_NAME;
+import static model.ForTests.SUPER_MOVIE_NAME;
+import static model.ForTests.SUPER_MOVIE_PLOT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.Set;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import main.SetUpDb;
-import model.api.ActorInMovieName;
+import model.api.MovieInfo;
+import model.api.Seat;
 
 public class CinemaTest {
 
-	private static final String RUNNING_FAR_AWAY_MOVIE_NAME = "Running far Away";
-	private static final String CRASH_TEA_MOVIE_NAME = "Crash Tea";
-	private static final String SMALL_FISH_MOVIE_NAME = "Small Fish";
+	private static final String JOSEUSER_EMAIL = "jose@bla.com";
+	private static final YearMonth JOSEUSER_CREDIT_CARD_EXPIRITY = YearMonth.of(
+			LocalDateTime.now().getYear(),
+			LocalDateTime.now().plusMonths(2).getMonth());
+	private static final String JOSEUSER_CREDIT_CARD_SEC_CODE = "145";
+	private static final String JOSEUSER_CREDIT_CARD_NUMBER = "123-456-789";
+	private static final String JOSEUSER_USERNAME = "joseuser";
+	private static final String ANTONIOUSER_USERNAME = "antonio";
 	private final ForTests tests = new ForTests();
 
 	private static EntityManagerFactory emf;
 
-	@BeforeAll
-	public static void setUp() {
+	@BeforeEach
+	public void setUp() {
 		emf = Persistence.createEntityManagerFactory("test-derby-cinema");
-		// Important: Since this system is not fully implemented, I'm going to
-		// take advantage of the setupDb sample data to write tests.
-		// However, if the full system is implemented,
-		// movie, shows and users creation services needs to be implemented and
-		// in that case I would rather use them to populate the system in each
-		// test.
-		// of course this couple these test to that setup sample data
-		new SetUpDb(emf).createSchemaAndPopulateSampleData();
 	}
 
 	@Test
-	public void bla() {
-		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
-		var showInfo = cinema.addNewShowToMovie(8L,
-				LocalDateTime.now().plusDays(1), 10f, 1L, 10);
-
-		System.out.println(showInfo);
-	}
-
-	@Test
-	public void aShowIsPlayingNow() {
+	public void aShowIsPlayingAt() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
 				tests.doNothingEmailProvider());
 
-		// var movieInfo = cinema.addNewMovie("a super movie", 109,
-		// LocalDate.of(2023, 04, 05),
-		// "a super movie that shows the life of ...",
-		// Set.of(Genre.ACTION, Genre.ADVENTURE));
+		var movieInfo = tests.createSuperMovie(cinema);
 
-		var movieShows = cinema.showsUntil(LocalDateTime.now().plusHours(3));
+		long theaterId = createATheater(cinema);
+
+		cinema.addNewShowToMovie(movieInfo.id(),
+				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+
+		var movieShows = cinema
+				.showsUntil(LocalDateTime.of(2024, 10, 10, 13, 31));
 
 		assertEquals(1, movieShows.size());
 		assertEquals(1, movieShows.get(0).shows().size());
-		assertTrue(movieShows.get(0).shows().get(0).price() == 19f);
+		assertTrue(movieShows.get(0).shows().get(0).price() == 10f);
 		assertTrue(movieShows.get(0).movieName()
-				.equals(RUNNING_FAR_AWAY_MOVIE_NAME));
+				.equals(SUPER_MOVIE_NAME));
+	}
+
+	@Test
+	public void reserveSeats() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider());
+
+		var movieInfo = tests.createSuperMovie(cinema);
+
+		long theaterId = createATheater(cinema);
+
+		var showInfo = cinema.addNewShowToMovie(movieInfo.id(),
+				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+
+		var userId = registerAUser(cinema);
+
+		var info = cinema.reserve(userId, showInfo.idShow(), Set.of(1, 5));
+
+		assertTrue(info.currentSeats().contains(new Seat(1, false)));
+		assertTrue(info.currentSeats().contains(new Seat(2, true)));
+		assertTrue(info.currentSeats().contains(new Seat(3, true)));
+		assertTrue(info.currentSeats().contains(new Seat(4, true)));
+		assertTrue(info.currentSeats().contains(new Seat(5, false)));
+	}
+
+	@Test
+	public void reserveAlreadReservedSeats() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider());
+
+		var movieInfo = tests.createSuperMovie(cinema);
+		long theaterId = createATheater(cinema);
+
+		var showInfo = cinema.addNewShowToMovie(movieInfo.id(),
+				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+
+		var userId = registerAUser(cinema);
+		var joseId = registerUserJose(cinema);
+
+		cinema.reserve(userId, showInfo.idShow(), Set.of(1, 5));
+
+		var e = assertThrows(BusinessException.class, () -> {
+			cinema.reserve(joseId, showInfo.idShow(), Set.of(1, 4, 3));
+			fail("I have reserved an already reserved seat");
+		});
+
+		assertEquals(ShowTime.SELECTED_SEATS_ARE_BUSY, e.getMessage());
+	}
+
+	@Test
+	public void registerAUserNameTwice() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider());
+		registerUserJose(cinema);
+
+		var e = assertThrows(BusinessException.class, () -> {
+			registerUserJose(cinema);
+			fail("I have registered the same userName twice");
+		});
+
+		assertEquals(Cinema.USER_NAME_ALREADY_EXISTS, e.getMessage());
+	}
+
+	@Test
+	public void confirmAndPaySeats() {
+		var fakePaymenentProvider = tests.fakePaymenentProvider();
+		var fakeEmailProvider = tests.fakeEmailProvider();
+
+		var cinema = new Cinema(emf, fakePaymenentProvider, fakeEmailProvider);
+
+		var movieInfo = tests.createSuperMovie(cinema);
+		long theaterId = createATheater(cinema);
+
+		var showInfo = cinema.addNewShowToMovie(movieInfo.id(),
+				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+
+		var joseId = registerUserJose(cinema);
+
+		cinema.reserve(joseId, showInfo.idShow(), Set.of(1, 5));
+
+		var ticket = cinema.pay(joseId, showInfo.idShow(), Set.of(1, 5),
+				JOSEUSER_CREDIT_CARD_NUMBER,
+				JOSEUSER_CREDIT_CARD_EXPIRITY,
+				JOSEUSER_CREDIT_CARD_SEC_CODE);
+
+		assertTrue(ticket.hasSeats(Set.of(1, 5)));
+		assertTrue(ticket.isPurchaserUserName(JOSEUSER_USERNAME));
+		assertTrue(fakePaymenentProvider.hasBeanCalledWith(
+				JOSEUSER_CREDIT_CARD_NUMBER,
+				JOSEUSER_CREDIT_CARD_EXPIRITY, JOSEUSER_CREDIT_CARD_SEC_CODE,
+				ticket.total()));
+		var emailTemplate = new NewSaleEmailTemplate(ticket.total(),
+				JOSEUSER_USERNAME, Set.of(1, 5), SUPER_MOVIE_NAME,
+				new DayTimeFormatted(LocalDateTime.of(2024, 10, 10, 13, 30))
+						.toString());
+		assertTrue(fakeEmailProvider.hasBeanCalledWith(JOSEUSER_EMAIL,
+				emailTemplate.subject(), emailTemplate.body()));
+	}
+
+	@Test
+	public void rateMovie() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider());
+
+		var movieInfo = tests.createSuperMovie(cinema);
+
+		var joseId = registerUserJose(cinema);
+
+		var userRate = cinema.rateMovieBy(joseId, movieInfo.id(), 4,
+				"great movie");
+
+		assertEquals(JOSEUSER_USERNAME, userRate.username());
+		assertEquals(4, userRate.rateValue());
+	}
+
+	@Test
+	public void retrieveRatesInvalidPageNumber() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), 10 /* page size */);
+		var e = assertThrows(BusinessException.class, () -> {
+			cinema.pagedRatesOfOrderedDate(1L, 0);
+		});
+
+		assertEquals(Cinema.PAGE_NUMBER_MUST_BE_GREATER_THAN_ZERO,
+				e.getMessage());
+	}
+
+	@Test
+	public void retrievePagedRatesFromMovie() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), 2 /* page size */);
+
+		var movieInfo = tests.createSuperMovie(cinema);
+
+		var joseId = registerUserJose(cinema);
+		var userId = registerAUser(cinema);
+		var antonioId = registerUserAntonio(cinema);
+
+		cinema.rateMovieBy(userId, movieInfo.id(), 1, "very bad movie");
+		cinema.rateMovieBy(joseId, movieInfo.id(), 2, "bad movie");
+		cinema.rateMovieBy(antonioId, movieInfo.id(), 3, "regular movie");
+
+		var userRates = cinema.pagedRatesOfOrderedDate(movieInfo.id(), 1);
+
+		assertEquals(2, userRates.size());
+		assertEquals(ANTONIOUSER_USERNAME, userRates.get(0).username());
+		assertEquals(JOSEUSER_USERNAME, userRates.get(1).username());
+	}
+
+	@Test
+	public void retrieveAllPagedRates() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), 2 /* page size */);
+
+		var superMovieInfo = tests.createSuperMovie(cinema);
+		var otherMovieInfo = tests.createOtherSuperMovie(cinema);
+
+		var joseId = registerUserJose(cinema);
+
+		cinema.rateMovieBy(joseId, superMovieInfo.id(), 1, "very bad movie");
+		cinema.rateMovieBy(joseId, otherMovieInfo.id(), 3, "fine movie");
+
+		var movies = cinema.pagedMoviesOrderedByRate(1);
+
+		assertEquals(2, movies.size());
+		assertEquals(ForTests.OTHER_SUPER_MOVIE_NAME, movies.get(0).name());
+		assertEquals(ForTests.SUPER_MOVIE_NAME, movies.get(1).name());
+	}
+
+	@Test
+	public void rateTheSameMovieTwice() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider());
+
+		var movieInfo = tests.createSuperMovie(cinema);
+		var joseId = registerUserJose(cinema);
+
+		cinema.rateMovieBy(joseId, movieInfo.id(), 4, "great movie");
+
+		var e = assertThrows(BusinessException.class, () -> {
+			cinema.rateMovieBy(joseId, movieInfo.id(), 4, "great movie");
+			fail("I was able to rate the same movie twice");
+		});
+
+		assertEquals(Cinema.USER_HAS_ALREADY_RATE, e.getMessage());
+	}
+
+	@Test
+	public void retrieveMovie() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider());
+
+		var superMovie = tests.createSuperMovie(cinema);
+
+		MovieInfo movie = cinema.movie(superMovie.id());
+
+		assertTrue(movie.actors().size() == 2);
+		assertTrue(movie.directorNames().size() == 1);
+		assertTrue(movie.directorNames().get(0)
+				.equals(SUPER_MOVIE_DIRECTOR_NAME));
+		assertTrue(movie.actors()
+				.contains(SUPER_MOVIE_ACTOR_CARLOS));
+		assertTrue(movie.name().equals(SUPER_MOVIE_NAME));
+		assertTrue(movie.plot().equals(SUPER_MOVIE_PLOT));
 	}
 
 	@Test
 	public void retrieveAllMovies() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
-		var movies = cinema.moviesSortedByName();
+				tests.doNothingEmailProvider(), 1);
 
-		assertEquals(4, movies.size());
-		assertTrue(movies.get(0).name().equals(CRASH_TEA_MOVIE_NAME));
-		assertTrue(movies.get(3).name().equals(SMALL_FISH_MOVIE_NAME));
+		tests.createSuperMovie(cinema);
+		tests.createOtherSuperMovie(cinema);
+
+		var movies1 = cinema.moviesSortedByName(1);
+
+		assertEquals(1, movies1.size());
+		assertTrue(movies1.get(0).name().equals(SUPER_MOVIE_NAME));
+
+		var movies2 = cinema.moviesSortedByName(2);
+
+		assertEquals(1, movies2.size());
+		assertTrue(
+				movies2.get(0).name().equals(ForTests.OTHER_SUPER_MOVIE_NAME));
 	}
 
-	@Test
-	public void addDirectorAndActor() {
-		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
-		var movieInfo = cinema.addActorToMovie(1L, "Carlos", "Kalchi",
-				"carlosk@bla.com", "aCharacterName");
-
-		assertTrue(movieInfo.actors().contains(
-				new ActorInMovieName("Carlos Kalchi", "aCharacterName")));
+	private Long registerUserJose(Cinema cinema) {
+		var joseId = cinema.registerUser("Jose", "aSurname", JOSEUSER_EMAIL,
+				JOSEUSER_USERNAME,
+				"password12345679", "password12345679");
+		return joseId;
 	}
 
-	@AfterAll
-	public static void tearDown() {
+	private Long registerUserAntonio(Cinema cinema) {
+		var userId = cinema.registerUser("Antonio", "aSurname",
+				"antonio@bla.com",
+				ANTONIOUSER_USERNAME,
+				"password12345678", "password12345678");
+		return userId;
+	}
+
+	private Long registerAUser(Cinema cinema) {
+		var userId = cinema.registerUser("aUser", "aSurname", "enrique@bla.com",
+				"username",
+				"password12345678", "password12345678");
+		return userId;
+	}
+
+	private Long createATheater(Cinema cinema) {
+		return cinema.addNewTheater("a Theater",
+				Set.of(1, 2, 3, 4, 5, 6));
+	}
+
+	@AfterEach
+	public void tearDown() {
 		emf.close();
 	}
 

@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Mon Oct 16 20:40:09 ART 2023:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018b-3adc-7a25-0000013756a8 
-on database directory memory:/home/enrique/eclipse-workspace-2023-06/sharedmodel/cinema with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@2aae9190 
+Sun Oct 22 21:03:04 ART 2023:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.16.1.1 - (1901046): instance a816c00e-018b-59d7-9cc4-0000014328a8 
+on database directory memory:/home/enrique/eclipse-workspace-2023-06/sharedmodel/cinema with class loader jdk.internal.loader.ClassLoaders$AppClassLoader@42110406 
 Loaded from file:/home/enrique/.m2/repository/org/apache/derby/derby/10.16.1.1/derby-10.16.1.1.jar
 java.vendor=Eclipse Adoptium
 java.runtime.version=17.0.7+7

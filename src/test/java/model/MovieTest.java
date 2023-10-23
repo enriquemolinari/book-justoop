@@ -40,10 +40,7 @@ public class MovieTest {
 							new Person("aName", "aSurname", "anEmail@mail.com"),
 							"George Bix")),
 					List.of(new Person("aDName", "aDSurname",
-							"anotherEmail@mail.com")),
-					(user, movie) -> {
-						return false;
-					});
+							"anotherEmail@mail.com")));
 		});
 
 		assertTrue(e.getMessage().equals(Movie.MOVIE_NAME_INVALID));
@@ -59,10 +56,7 @@ public class MovieTest {
 							new Person("aName", "aSurname", "anEmail@mail.com"),
 							"George Bix")),
 					List.of(new Person("aDName", "aDSurname",
-							"anotherEmail@mail.com")),
-					(user, movie) -> {
-						return false;
-					});
+							"anotherEmail@mail.com")));
 		});
 
 		assertTrue(e.getMessage().equals(Movie.DURATION_INVALID));
@@ -78,10 +72,7 @@ public class MovieTest {
 							new Person("aName", "aSurname", "anEmail@mail.com"),
 							"George Bix")),
 					List.of(new Person("aDName", "aDSurname",
-							"anotherEmail@mail.com")),
-					(user, movie) -> {
-						return false;
-					});
+							"anotherEmail@mail.com")));
 		});
 
 		assertTrue(e.getMessage().equals(Movie.GENRES_INVALID));
@@ -99,10 +90,7 @@ public class MovieTest {
 					List.of(new Person(" ", "aSurname",
 							"anotherEmail@mail.com"),
 							new Person("aName", "aSurname",
-									"anotherOtherEmail@mail.com")),
-					(user, movie) -> {
-						return false;
-					});
+									"anotherOtherEmail@mail.com")));
 		});
 
 		assertTrue(e.getMessage().equals(Person.NAME_MUST_NOT_BE_BLANK));
@@ -112,18 +100,6 @@ public class MovieTest {
 	public void newCreatedMovieHasCeroRate() {
 		var smallFish = tests.createSmallFishMovie();
 		assertTrue(smallFish.hasRateValue(0));
-	}
-
-	@Test
-	public void aUserCannotRateTheSameMovieTwice() {
-		var smallFish = tests.createSmallFishMovieWithRates();
-		smallFish.rateBy(tests.createUserJoseph(), 5, "great movie");
-
-		Exception e = assertThrows(BusinessException.class, () -> {
-			smallFish.rateBy(tests.createUserCharly(), 4, "fantastic movie");
-		});
-
-		assertTrue(e.getMessage().equals(Movie.USER_HAS_ALREADY_RATE));
 	}
 
 	@Test

@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import model.api.CinemaSystem;
-import model.api.DetailedMovieInfo;
 import model.api.MovieInfo;
 import model.api.MovieShows;
 
@@ -22,13 +21,13 @@ public class CinemaSystemRestController {
 	}
 
 	@GetMapping("/movies/{id}")
-	public DetailedMovieInfo movies(@PathVariable Long id) {
+	public MovieInfo movies(@PathVariable Long id) {
 		return cinema.movie(id);
 	}
 
 	@GetMapping("/movies")
 	public List<MovieInfo> allMovies() {
-		return cinema.moviesSortedByName();
+		return cinema.moviesSortedByName(1);
 	}
 
 	@GetMapping("/shows")

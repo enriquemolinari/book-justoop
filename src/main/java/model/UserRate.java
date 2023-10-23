@@ -61,8 +61,7 @@ class UserRate {
 	}
 
 	public UserMovieRate toUserMovieRate() {
-		// TODO: format date
 		return new UserMovieRate(this.user.userName(), value,
-				ratedAt.toString(), comment);
+				new FormattedDateTime(ratedAt).toString(), comment);
 	}
 }

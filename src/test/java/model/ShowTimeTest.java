@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -25,6 +26,20 @@ public class ShowTimeTest {
 		});
 
 		assertEquals(e.getMessage(), ShowTime.START_TIME_MUST_BE_IN_THE_FUTURE);
+	}
+
+	@Test
+	public void showTimeStartTimeMustBeAfterMovieReleaseDate() {
+		Exception e = assertThrows(BusinessException.class, () -> {
+			new ShowTime(DateTimeProvider.create(),
+					tests.createSmallFishMovie(LocalDate.now().plusDays(20)),
+					LocalDateTime.now().plusMinutes(10), 10f,
+					new Theater("A Theater", Set.of(1),
+							DateTimeProvider.create()));
+		});
+
+		assertEquals(e.getMessage(),
+				ShowTime.SHOW_START_TIME_MUST_BE_AFTER_MOVIE_RELEASE_DATE);
 	}
 
 	@Test
@@ -94,9 +109,6 @@ public class ShowTimeTest {
 				seatsToTryReserveByJose));
 	}
 
-	// TODO: test para validar que se invoco a payment y a email, y verificar el
-	// total de la venta y el user tenga la venta en su collection
-
 	@Test
 	public void confirmReservedSeats() {
 		var aShow = tests.createShowForSmallFish();
@@ -110,6 +122,12 @@ public class ShowTimeTest {
 
 		assertTrue(
 				aShow.areAllSeatsConfirmedBy(carlos, seatsToConfirmByCarlos));
+
+		assertEquals(seatsToConfirmByCarlos,
+				Set.copyOf(aShow.confirmedSeatsFrom(carlos)));
+
+		assertTrue(aShow.noneOfTheSeatsAreConfirmedBy(carlos,
+				Set.of(3, 4, 5, 6)));
 	}
 
 	@Test
@@ -145,11 +163,12 @@ public class ShowTimeTest {
 
 	private User createCarlosUser() {
 		return new User(new Person("Carlos", "Garzia", "cgarzia@my.com"),
-				"cgarzia", "123456789101112");
+				"cgarzia", "123456789101112", "123456789101112");
 	}
 
 	private User createJoseUser() {
 		return new User(new Person("Jose", "Lopiz", "jlopiz@my.com"), "jlopiz",
+				"123456789101112",
 				"123456789101112");
 	}
 

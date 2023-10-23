@@ -10,13 +10,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Transient;
 import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import model.api.Seat;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -32,7 +32,7 @@ class ShowSeat {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	private User user;
 	private boolean reserved;
 	private boolean confirmed;
@@ -45,7 +45,6 @@ class ShowSeat {
 	private int version;
 
 	@Transient
-	// This allows testing
 	private DateTimeProvider provider = DateTimeProvider.create();
 
 	public ShowSeat(ShowTime s, Integer seatNumber,
@@ -108,5 +107,13 @@ class ShowSeat {
 	public boolean isIncludedIn(Set<Integer> selectedSeats) {
 		return selectedSeats.stream()
 				.anyMatch(ss -> ss.equals(this.seatNumber));
+	}
+
+	int seatNumber() {
+		return seatNumber;
+	}
+
+	public Seat toSeat() {
+		return new Seat(seatNumber, isAvailable());
 	}
 }

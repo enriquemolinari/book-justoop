@@ -71,11 +71,9 @@ public class SetUpDb {
 					"A teacher tries to teach Rock & Roll music and history "
 							+ "to elementary school kids",
 					109, LocalDate.now(), Set.of(Genre.COMEDY, Genre.ACTION),
-					List.of(jakeActor, joshActor), List.of(colinDirector),
-					(user, movie) -> {
-						return false;
-					});
-			var eu = new User(enrique, "emolinari", "123456789012");
+					List.of(jakeActor, joshActor), List.of(colinDirector));
+			var eu = new User(enrique, "emolinari", "123456789012",
+					"123456789012");
 			em.persist(eu);
 
 			schoolMovie.rateBy(eu, 5, "Great Movie");
@@ -87,32 +85,26 @@ public class SetUpDb {
 					LocalDate.now().minusDays(1),
 					Set.of(Genre.ADVENTURE, Genre.DRAMA),
 					List.of(jakeActor2, ernestActor, nervanActor),
-					List.of(andreDirector), (user, movie) -> {
-						return false;
-					});
+					List.of(andreDirector));
 
 			fishMovie.rateBy(eu, 4, "Fantastic !!");
 
 			em.persist(fishMovie);
 
-			var ju = new User(josefina, "jsimini", "123456789012");
+			var ju = new User(josefina, "jsimini", "123456789012",
+					"123456789012");
 			em.persist(ju);
 
 			var teaMovie = new Movie("Crash Tea", "A documentary about tea.",
 					105, LocalDate.now().minusDays(3), Set.of(Genre.COMEDY),
 					List.of(michaelActor, michellActor),
-					List.of(judithDirector, craigDirector), (user, movie) -> {
-						return false;
-					});
+					List.of(judithDirector, craigDirector));
 			em.persist(teaMovie);
 
 			var runningMovie = new Movie("Running far Away",
 					"José a sad person run away from his town looking for new adventures.",
 					105, LocalDate.now(), Set.of(Genre.THRILLER, Genre.ACTION),
-					List.of(francoActor, camiloActor), List.of(judithDirector),
-					(user, movie) -> {
-						return false;
-					});
+					List.of(francoActor, camiloActor), List.of(judithDirector));
 			em.persist(runningMovie);
 
 			// Seats from Theatre A
@@ -163,8 +155,9 @@ public class SetUpDb {
 			em.persist(show6);
 
 			// users
-			em.persist(new User(nico, "nico", "123456789012"));
-			em.persist(new User(lucia, "lucia", "123456789012"));
+			em.persist(new User(nico, "nico", "123456789012", "123456789012"));
+			em.persist(
+					new User(lucia, "lucia", "123456789012", "123456789012"));
 
 			tx.commit();
 		} catch (Exception e) {

@@ -1,6 +1,7 @@
 package model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -52,10 +53,6 @@ class Sale {
 		return this.total == aTotal;
 	}
 
-	private String salesNumber() {
-		return String.format("%i-%i", this.id, this.salesDate.getYear());
-	}
-
 	private String formattedSalesDate() {
 		return new FormattedDateTime(salesDate).toString();
 	}
@@ -64,8 +61,12 @@ class Sale {
 		return this.purchaser.equals(aUser);
 	}
 
+	List<Integer> confirmedSeatNumbers() {
+		return this.soldShow.confirmedSeatsFrom(this.purchaser);
+	}
+
 	public Ticket ticket() {
-		return new Ticket(salesNumber(), total, pointsWon, formattedSalesDate(),
-				purchaser.userName());
+		return new Ticket(total, pointsWon, formattedSalesDate(),
+				purchaser.userName(), confirmedSeatNumbers());
 	}
 }

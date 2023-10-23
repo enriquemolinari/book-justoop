@@ -1,6 +1,7 @@
 package model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -20,13 +21,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Transient;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import model.api.ActorInMovieName;
-import model.api.DetailedMovieInfo;
 import model.api.Genre;
 import model.api.MovieInfo;
 import model.api.MovieShows;
@@ -41,7 +40,6 @@ public class Movie {
 	static final String MOVIE_NAME_INVALID = "Movie name must not be null or blank";
 	static final String DURATION_INVALID = "Movie's duration must be greater than 0";
 	static final String GENRES_INVALID = "You must add at least one genre to the movie";
-	static final String USER_HAS_ALREADY_RATE = "The user has already rate the movie";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -69,20 +67,15 @@ public class Movie {
 	@Embedded
 	private Rating rating;
 
-	// TODO: mover esto a Cinema. Dejar comentario que lo muevo por cuestiones
-	// de performance.
-	@Transient
-	private UsersRating usersRating = UsersRating.defaultProvider();
 	@OneToMany(mappedBy = "movieToBeScreened")
 	private List<ShowTime> showTimes;
 
 	public Movie(String name, String plot, int duration, LocalDate releaseDate,
-			Set<Genre> genres, List<Actor> actors, List<Person> directors,
-			UsersRating usersRating) {
+			Set<Genre> genres, List<Actor> actors, List<Person> directors) {
 		checkDurationGreaterThanZero(duration);
 		checkGenresAtLeastHasOne(genres);
 		this.name = new NotBlankString(name, MOVIE_NAME_INVALID).value();
-		this.plot = new NotBlankString(name, MOVIE_PLOT_INVALID).value();
+		this.plot = new NotBlankString(plot, MOVIE_PLOT_INVALID).value();
 		this.duration = duration;
 		this.releaseDate = releaseDate;
 		this.genres = genres;
@@ -90,13 +83,12 @@ public class Movie {
 		this.directors = directors;
 		this.userRates = new ArrayList<>();
 		this.rating = Rating.notRatedYet();
-		this.usersRating = usersRating;
 	}
 
 	public Movie(String name, String plot, int duration, LocalDate releaseDate,
 			Set<Genre> genres) {
 		this(name, plot, duration, releaseDate, genres, new ArrayList<Actor>(),
-				new ArrayList<Person>(), UsersRating.defaultProvider());
+				new ArrayList<Person>());
 	}
 
 	private <T> void checkCollectionSize(Set<T> collection, String errorMsg) {
@@ -148,16 +140,16 @@ public class Movie {
 		return this.directors.stream().anyMatch(d -> d.isNamed(aDirectorName));
 	}
 
-	public void rateBy(User user, int value, String comment) {
-		// Cannot validate this using userRates (oneToMany association)
-		// because Hibernate will load the entire collection in memory. That
+	public UserRate rateBy(User user, int value, String comment) {
+		// Ideally validating logic that a user does not rate the same
+		// movie twice should be here. However, to do that Hibernate will
+		// load the entire collection in memory. That
 		// would hurt performance as the collection gets bigger.
-		if (this.usersRating.hasAlreadyRate(user, this)) {
-			throw new BusinessException(USER_HAS_ALREADY_RATE);
-		}
-
+		// This validation gets performed in Cimema.
+		var userRate = new UserRate(user, value, comment, this);
 		this.rating.calculaNewRate(value);
-		this.userRates.add(new UserRate(user, value, comment, this));
+		this.userRates.add(userRate);
+		return userRate;
 	}
 
 	boolean hasRateValue(float aValue) {
@@ -178,11 +170,6 @@ public class Movie {
 						.map(show -> show.toShowInfo()).toList());
 	}
 
-	public DetailedMovieInfo toDetailedInfo() {
-		return new DetailedMovieInfo(toInfo(), this.userRates.stream()
-				.map(ur -> ur.toUserMovieRate()).toList());
-	}
-
 	public void addAnActor(String name, String surname, String email,
 			String characterName) {
 		this.actors.add(
@@ -194,10 +181,11 @@ public class Movie {
 	}
 
 	public MovieInfo toInfo() {
-		// TODO: format releaseDate and duration
-		return new MovieInfo(id, name, String.valueOf(duration), plot,
+		return new MovieInfo(id, name,
+				new MovieDurationFormat(duration).toString(), plot,
 				genreAsListOfString(), directorsNamesAsString(),
-				releaseDate.toString(), rating.actualRate(),
+				new FormattedDate(releaseDate).toString(),
+				rating.actualRate(),
 				toActorsInMovieNames());
 	}
 
@@ -217,4 +205,7 @@ public class Movie {
 				.map(g -> g.toLowerCase()).collect(Collectors.toSet());
 	}
 
+	LocalDateTime releaseDateAsDateTime() {
+		return this.releaseDate.atTime(0, 0);
+	}
 }
