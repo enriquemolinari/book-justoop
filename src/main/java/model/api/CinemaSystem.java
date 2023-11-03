@@ -6,20 +6,24 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.Set;
 
-//TODO: implementar la verificacion de estas authenticado aqui adentro!
-// sino, si lo hago a nivel Web, y quiero mover a Javalin u otro, duplico esta logica.
 public interface CinemaSystem {
 
 	List<MovieShows> showsUntil(LocalDateTime untilTo);
 
-	List<MovieInfo> moviesSortedByName(int pageNumber);
+	List<MovieInfo> pagedMoviesSortedByName(int pageNumber);
+
+	List<MovieInfo> pagedMoviesOrderedByRate(int pageNumber);
+
+	// List<MovieInfo> pagedMoviesSortedByReleaseDate(int pageNumber);
 
 	MovieInfo movie(Long id);
+
+	DetailedShowInfo show(Long id);
 
 	MovieInfo addNewMovie(String name, int duration,
 			LocalDate releaseDate, String plot, Set<Genre> genres);
 
-	MovieInfo addActorToMovie(Long movieId, String name, String surname,
+	MovieInfo addActorTo(Long movieId, String name, String surname,
 			String email, String characterName);
 
 	MovieInfo addDirectorToMovie(Long movieId, String name,
@@ -27,7 +31,7 @@ public interface CinemaSystem {
 
 	Long addNewTheater(String name, Set<Integer> seatsNumbers);
 
-	ShowInfo addNewShowToMovie(Long movieId, LocalDateTime startTime,
+	ShowInfo addNewShowFor(Long movieId, LocalDateTime startTime,
 			float price, Long theaterId, int pointsToWin);
 
 	DetailedShowInfo reserve(Long userId, Long showTimeId,
@@ -42,18 +46,14 @@ public interface CinemaSystem {
 
 	List<UserMovieRate> pagedRatesOfOrderedDate(Long movieId, int pageNumber);
 
-	List<MovieInfo> pagedMoviesOrderedByRate(int pageNumber);
+	List<MovieInfo> pagedSearchMovieByName(String fullOrPartmovieName,
+			int pageNumber);
 
-	// search Movie by name
+	String login(String username, String password);
 
-	// showById
+	Long userIdFrom(String token);
 
-	// UserRecord login(String username, String password);
-
-	// (private en Cinema) Long userIdFrom(String token) throws
-	// UnauthorizedException;
-
-	// Profile profileFromUser(userId)
+	UserProfile profileFrom(Long userId);
 
 	Long registerUser(String name, String surname, String email,
 			String userName,

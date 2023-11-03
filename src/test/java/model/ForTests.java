@@ -6,6 +6,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,7 @@ import model.api.CreditCardPaymentGateway;
 import model.api.EmailProvider;
 import model.api.Genre;
 import model.api.MovieInfo;
+import model.api.Token;
 
 public class ForTests {
 
@@ -91,6 +93,20 @@ public class ForTests {
 		};
 	}
 
+	Token doNothingToken() {
+		return new Token() {
+			@Override
+			public Long verifyAndGetUserIdFrom(String token) {
+				return 0L;
+			}
+
+			@Override
+			public String tokenFrom(Map<String, Object> payload) {
+				return "aToken";
+			}
+		};
+	}
+
 	Movie createSmallFishMovieWithRates() {
 		return new Movie("Small Fish", "plot ...", 102,
 				LocalDate.of(2023, 10, 10) /* release data */,
@@ -134,10 +150,10 @@ public class ForTests {
 				SUPER_MOVIE_PLOT,
 				Set.of(Genre.ACTION, Genre.ADVENTURE));
 
-		cinema.addActorToMovie(movieInfo.id(), "Carlos", "Kalchi",
+		cinema.addActorTo(movieInfo.id(), "Carlos", "Kalchi",
 				"carlosk@bla.com", "aCharacterName");
 
-		cinema.addActorToMovie(movieInfo.id(), "Jose", "Hermes",
+		cinema.addActorTo(movieInfo.id(), "Jose", "Hermes",
 				"jose@bla.com", "anotherCharacterName");
 
 		cinema.addDirectorToMovie(movieInfo.id(), "aDirectorName", "surname",
@@ -152,7 +168,7 @@ public class ForTests {
 				"other super movie ...",
 				Set.of(Genre.COMEDY, Genre.FANTASY));
 
-		cinema.addActorToMovie(movieInfo.id(), "Nico", "Cochix",
+		cinema.addActorTo(movieInfo.id(), "Nico", "Cochix",
 				"nico@bla.com", "super Character Name");
 
 		cinema.addDirectorToMovie(movieInfo.id(), "aSuper DirectorName",

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -26,6 +25,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import model.api.ActorInMovieName;
+import model.api.BusinessException;
 import model.api.Genre;
 import model.api.MovieInfo;
 import model.api.MovieShows;
@@ -185,7 +185,7 @@ public class Movie {
 				new MovieDurationFormat(duration).toString(), plot,
 				genreAsListOfString(), directorsNamesAsString(),
 				new FormattedDate(releaseDate).toString(),
-				rating.actualRate(),
+				rating.actualRateAsString(), rating.totalVotes(),
 				toActorsInMovieNames());
 	}
 
@@ -201,8 +201,13 @@ public class Movie {
 	}
 
 	private Set<String> genreAsListOfString() {
-		return Stream.of(Genre.values()).map(Genre::name)
-				.map(g -> g.toLowerCase()).collect(Collectors.toSet());
+		return this.genres.stream().map(g -> capitalizeFirstLetter(g.name()))
+				.collect(Collectors.toSet());
+	}
+
+	private String capitalizeFirstLetter(String aString) {
+		return aString.substring(0, 1).toUpperCase()
+				+ aString.substring(1).toLowerCase();
 	}
 
 	LocalDateTime releaseDateAsDateTime() {

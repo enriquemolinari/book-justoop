@@ -13,6 +13,8 @@ import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.RollbackException;
+import model.api.AuthException;
+import model.api.BusinessException;
 import model.api.CinemaSystem;
 import model.api.CreditCardPaymentGateway;
 import model.api.DetailedShowInfo;
@@ -22,7 +24,9 @@ import model.api.MovieInfo;
 import model.api.MovieShows;
 import model.api.ShowInfo;
 import model.api.Ticket;
+import model.api.Token;
 import model.api.UserMovieRate;
+import model.api.UserProfile;
 
 public class Cinema implements CinemaSystem {
 	static final String USER_NAME_ALREADY_EXISTS = "userName already exists";
@@ -34,26 +38,41 @@ public class Cinema implements CinemaSystem {
 	static final String USER_HAS_ALREADY_RATE = "The user has already rate the movie";
 	static final String PAGE_NUMBER_MUST_BE_GREATER_THAN_ZERO = "page number must be greater than zero";
 	private static final int DEFAULT_PAGE_SIZE = 20;
+	static final String USER_OR_PASSWORD_ERROR = "Invalid username or password";
 
 	private EntityManagerFactory emf;
 	private CreditCardPaymentGateway paymentGateway;
 	private EmailProvider emailProvider;
 	private EntityManager em;
 	private int pageSize;
+	private DateTimeProvider dateTimeProvider;
+	private Token token;
 
 	public Cinema(EntityManagerFactory emf,
 			CreditCardPaymentGateway paymentGateway,
-			EmailProvider emailProvider, int pageSize) {
+			EmailProvider emailProvider, DateTimeProvider provider,
+			Token token,
+			int pageSize) {
 		this.emf = emf;
 		this.paymentGateway = paymentGateway;
 		this.emailProvider = emailProvider;
+		this.token = token;
 		this.pageSize = pageSize;
+		this.dateTimeProvider = provider;
 	}
 
 	public Cinema(EntityManagerFactory emf,
 			CreditCardPaymentGateway paymentGateway,
-			EmailProvider emailProvider) {
-		this(emf, paymentGateway, emailProvider, DEFAULT_PAGE_SIZE);
+			EmailProvider emailProvider, Token token, int pageSize) {
+		this(emf, paymentGateway, emailProvider, DateTimeProvider.create(),
+				token, pageSize);
+	}
+
+	public Cinema(EntityManagerFactory emf,
+			CreditCardPaymentGateway paymentGateway,
+			EmailProvider emailProvider, Token token) {
+		this(emf, paymentGateway, emailProvider, DateTimeProvider.create(),
+				token, DEFAULT_PAGE_SIZE);
 	}
 
 	public List<MovieShows> showsUntil(LocalDateTime untilTo) {
@@ -77,7 +96,7 @@ public class Cinema implements CinemaSystem {
 	}
 
 	@Override
-	public List<MovieInfo> moviesSortedByName(int pageNumber) {
+	public List<MovieInfo> pagedMoviesSortedByName(int pageNumber) {
 		return inTx(em -> {
 			var query = em.createQuery("from Movie m "
 					+ "join fetch m.actors "
@@ -124,7 +143,7 @@ public class Cinema implements CinemaSystem {
 	}
 
 	@Override
-	public MovieInfo addActorToMovie(Long movieId, String name, String surname,
+	public MovieInfo addActorTo(Long movieId, String name, String surname,
 			String email, String characterName) {
 		return inTx(em -> {
 			var movie = em.getReference(Movie.class, movieId);
@@ -151,7 +170,7 @@ public class Cinema implements CinemaSystem {
 		});
 	}
 
-	public ShowInfo addNewShowToMovie(Long movieId, LocalDateTime startTime,
+	public ShowInfo addNewShowFor(Long movieId, LocalDateTime startTime,
 			float price, Long theaterId, int pointsToWin) {
 		return inTx(em -> {
 			var movie = movieBy(movieId);
@@ -203,7 +222,24 @@ public class Cinema implements CinemaSystem {
 
 			return sale.ticket();
 		});
+	}
 
+	@Override
+	public String login(String username, String password) {
+		return inTx(em -> {
+			var q = this.em.createQuery(
+					"select u from User u where u.userName = ?1 and u.password.password = ?2",
+					User.class);
+			q.setParameter(1, username);
+			q.setParameter(2, password);
+			var mightBeAUser = q.getResultList();
+			if (mightBeAUser.size() == 0) {
+				throw new AuthException(USER_OR_PASSWORD_ERROR);
+			}
+			var user = mightBeAUser.get(0);
+			em.persist(new LoginAudit(this.dateTimeProvider.now(), user));
+			return token.tokenFrom(user.toMap());
+		});
 	}
 
 	@Override
@@ -224,7 +260,7 @@ public class Cinema implements CinemaSystem {
 	public UserMovieRate rateMovieBy(Long userId, Long movieId, int rateValue,
 			String comment) {
 		return inTxWithRetriesOnConflict(em -> {
-			checkUserDoesRateSameMovieTwice(userId, movieId);
+			checkUserIsRatingSameMovieTwice(userId, movieId);
 			var user = userBy(userId);
 			var movie = movieBy(movieId);
 
@@ -233,7 +269,7 @@ public class Cinema implements CinemaSystem {
 		}, NUMBER_OF_RETRIES);
 	}
 
-	private void checkUserDoesRateSameMovieTwice(Long userId, Long movieId) {
+	private void checkUserIsRatingSameMovieTwice(Long userId, Long movieId) {
 		var q = this.em.createQuery(
 				"select ur from UserRate ur where ur.user.id = ?1 and movie.id = ?2",
 				UserRate.class);
@@ -329,31 +365,45 @@ public class Cinema implements CinemaSystem {
 		});
 	}
 
+	@Override
+	public DetailedShowInfo show(Long id) {
+		return inTx(em -> {
+			var show = showTimeBy(id);
+			return show.toDetailedInfo();
+		});
+	}
+
+	@Override
+	public List<MovieInfo> pagedSearchMovieByName(String fullOrPartmovieName,
+			int pageNumber) {
+		checkPageNumberIsGreaterThanZero(pageNumber);
+		return inTx(em -> {
+			var q = em.createQuery(
+					"select m from Movie m "
+							// a trigram index is required
+							// on m.name to make this perform fine
+							+ "where m.name like ?1 "
+							+ "order by m.name desc",
+					Movie.class);
+			q.setParameter(1, "%" + fullOrPartmovieName + "%");
+			q.setFirstResult((pageNumber - 1) * this.pageSize);
+			q.setMaxResults(this.pageSize);
+			return q.getResultList().stream().map(m -> m.toInfo()).toList();
+		});
+	}
+
 	private void checkPageNumberIsGreaterThanZero(int pageNumber) {
 		if (pageNumber <= 0) {
 			throw new BusinessException(PAGE_NUMBER_MUST_BE_GREATER_THAN_ZERO);
 		}
 	}
 
-	// private <T> T pagedQuery(int pageNumber) {
-	// List<MovieInfo> inTx = inTx(em -> {
-	// var q = em.createQuery(
-	// "select m from Movie m order by m.rating.rateValue desc",
-	// Movie.class);
-	// q.setFirstResult((pageNumber - 1) * this.pageSize);
-	// q.setMaxResults(this.pageSize);
-	//
-	// return q.getResultList().stream().map(m -> m.toInfo()).toList();
-	// });
-	//
-	// return inTx;
-	// }
-
 	@Override
 	public List<MovieInfo> pagedMoviesOrderedByRate(int pageNumber) {
 		return inTx(em -> {
 			var q = em.createQuery(
-					"select m from Movie m order by m.rating.rateValue desc",
+					"select m from Movie m "
+							+ "order by m.rating.totalUserVotes desc, m.rating.rateValue desc",
 					Movie.class);
 			q.setFirstResult((pageNumber - 1) * this.pageSize);
 			q.setMaxResults(this.pageSize);
@@ -401,4 +451,15 @@ public class Cinema implements CinemaSystem {
 				"Trasaction could not be completed due to concurrency conflic");
 	}
 
+	@Override
+	public Long userIdFrom(String token) {
+		return this.token.verifyAndGetUserIdFrom(token);
+	}
+
+	@Override
+	public UserProfile profileFrom(Long userId) {
+		return inTx(em -> {
+			return userBy(userId).toProfile();
+		});
+	}
 }

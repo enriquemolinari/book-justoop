@@ -10,7 +10,7 @@ public class Main {
 		EntityManagerFactory emf = Persistence
 				.createEntityManagerFactory("derby-cinema");
 
-		var cinema = new Cinema(emf, null, null);
+		var cinema = new Cinema(emf, null, null, null);
 
 		cinema.registerUser("aaaa", "bbb", "em@bla.com", "userName18",
 				"abcdrefsdfsd234", "abcdrefsdfsd234");

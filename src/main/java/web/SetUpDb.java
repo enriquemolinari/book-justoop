@@ -1,4 +1,4 @@
-package main;
+package web;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -48,13 +48,13 @@ public class SetUpDb {
 					"michael@mymovies.com");
 			var michell = new Person("Michell", "Orenson",
 					"michell@mymovies.com");
-			var craigDirector = new Person("Craig", "Wagemen",
+			var craigDirector = new Person("Christopher", "Wegemen",
 					"craig@mymovies.com");
-			var judithDirector = new Person("Judith", "Zavele",
+			var judithDirector = new Person("Jude", "Zevele",
 					"judith@mymovies.com");
-			var andreDirector = new Person("Andre", "Lambert",
+			var andreDirector = new Person("Andres", "Lembert",
 					"andre@mymovies.com");
-			var colinDirector = new Person("Colin", "Clifferd",
+			var colinDirector = new Person("Colin", "Clefferd",
 					"andre@mymovies.com");
 
 			var jakeActor = new Actor(jake, "Daniel Finne");
@@ -76,7 +76,16 @@ public class SetUpDb {
 					"123456789012");
 			em.persist(eu);
 
+			var nu = new User(nico, "nico", "123456789012", "123456789012");
+			var lu = new User(lucia, "lucia", "123456789012", "123456789012");
+
+			em.persist(nu);
+			em.persist(lu);
+
 			schoolMovie.rateBy(eu, 5, "Great Movie");
+			schoolMovie.rateBy(nu, 5,
+					"Fantastic! The actors, the music, everything is fantastic!");
+			schoolMovie.rateBy(lu, 4, "I really enjoy the movie");
 
 			em.persist(schoolMovie);
 
@@ -153,11 +162,6 @@ public class SetUpDb {
 			var show6 = new ShowTime(DateTimeProvider.create(), runningMovie,
 					LocalDateTime.now().plusHours(2), 19f, tb);
 			em.persist(show6);
-
-			// users
-			em.persist(new User(nico, "nico", "123456789012", "123456789012"));
-			em.persist(
-					new User(lucia, "lucia", "123456789012", "123456789012"));
 
 			tx.commit();
 		} catch (Exception e) {

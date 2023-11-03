@@ -19,6 +19,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import model.api.BusinessException;
+import model.api.UserProfile;
 
 @Entity
 @Table(name = "ClientUser")
@@ -114,11 +116,16 @@ public class User {
 		return this.person.email();
 	}
 
-	public Map<String, String> toMap() {
-		return Map.of("username", this.userName);
+	public Map<String, Object> toMap() {
+		return Map.of("id", this.id);
 	}
 
 	Long id() {
 		return id;
+	}
+
+	public UserProfile toProfile() {
+		return new UserProfile(this.person.fullName(), this.userName,
+				this.person.email(), this.points);
 	}
 }

@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import model.api.BusinessException;
 import model.api.Genre;
 
 public class MovieTest {

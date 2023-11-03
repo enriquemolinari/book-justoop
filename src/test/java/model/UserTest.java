@@ -1,9 +1,13 @@
 package model;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+
+import model.api.BusinessException;
+import model.api.UserProfile;
 
 public class UserTest {
 
@@ -106,6 +110,14 @@ public class UserTest {
 	public void newCreatedUserHasZeroPoints() {
 		var u = createUserEnrique();
 		assertTrue(u.hasPoints(0));
+	}
+
+	@Test
+	public void userProfile() {
+		var u = createUserEnrique();
+
+		assertEquals(new UserProfile("Enrique Molinari", "enriquemolinari",
+				"enrique.molinari@gmail.com", 0), u.toProfile());
 	}
 
 	@Test

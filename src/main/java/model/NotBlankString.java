@@ -1,5 +1,7 @@
 package model;
 
+import model.api.BusinessException;
+
 class NotBlankString {
 
 	private String value;

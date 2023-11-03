@@ -19,11 +19,16 @@ import org.junit.jupiter.api.Test;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
+import model.api.AuthException;
+import model.api.BusinessException;
 import model.api.MovieInfo;
 import model.api.Seat;
 
 public class CinemaTest {
 
+	private static final String JOSEUSER_SURNAME = "aSurname";
+	private static final String JOSEUSER_NAME = "Jose";
+	private static final String JOSEUSER_PASS = "password12345679";
 	private static final String JOSEUSER_EMAIL = "jose@bla.com";
 	private static final YearMonth JOSEUSER_CREDIT_CARD_EXPIRITY = YearMonth.of(
 			LocalDateTime.now().getYear(),
@@ -44,13 +49,13 @@ public class CinemaTest {
 	@Test
 	public void aShowIsPlayingAt() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
+				tests.doNothingEmailProvider(), tests.doNothingToken());
 
 		var movieInfo = tests.createSuperMovie(cinema);
 
 		long theaterId = createATheater(cinema);
 
-		cinema.addNewShowToMovie(movieInfo.id(),
+		cinema.addNewShowFor(movieInfo.id(),
 				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
 
 		var movieShows = cinema
@@ -66,13 +71,13 @@ public class CinemaTest {
 	@Test
 	public void reserveSeats() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
+				tests.doNothingEmailProvider(), tests.doNothingToken());
 
 		var movieInfo = tests.createSuperMovie(cinema);
 
 		long theaterId = createATheater(cinema);
 
-		var showInfo = cinema.addNewShowToMovie(movieInfo.id(),
+		var showInfo = cinema.addNewShowFor(movieInfo.id(),
 				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
 
 		var userId = registerAUser(cinema);
@@ -87,14 +92,39 @@ public class CinemaTest {
 	}
 
 	@Test
+	public void retrieveShow() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), tests.doNothingToken());
+
+		var movieInfo = tests.createSuperMovie(cinema);
+
+		long theaterId = createATheater(cinema);
+
+		var showInfo = cinema.addNewShowFor(movieInfo.id(),
+				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+
+		var userId = registerAUser(cinema);
+
+		cinema.reserve(userId, showInfo.idShow(), Set.of(1, 5));
+
+		var info = cinema.show(showInfo.idShow());
+
+		assertTrue(info.currentSeats().contains(new Seat(1, false)));
+		assertTrue(info.currentSeats().contains(new Seat(2, true)));
+		assertTrue(info.currentSeats().contains(new Seat(3, true)));
+		assertTrue(info.currentSeats().contains(new Seat(4, true)));
+		assertTrue(info.currentSeats().contains(new Seat(5, false)));
+	}
+
+	@Test
 	public void reserveAlreadReservedSeats() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
+				tests.doNothingEmailProvider(), tests.doNothingToken());
 
 		var movieInfo = tests.createSuperMovie(cinema);
 		long theaterId = createATheater(cinema);
 
-		var showInfo = cinema.addNewShowToMovie(movieInfo.id(),
+		var showInfo = cinema.addNewShowFor(movieInfo.id(),
 				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
 
 		var userId = registerAUser(cinema);
@@ -111,9 +141,34 @@ public class CinemaTest {
 	}
 
 	@Test
+	public void loginOk() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), tests.doNothingToken());
+		registerUserJose(cinema);
+
+		var token = cinema.login(JOSEUSER_USERNAME, JOSEUSER_PASS);
+
+		assertEquals("aToken", token);
+	}
+
+	@Test
+	public void loginFail() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), tests.doNothingToken());
+		registerUserJose(cinema);
+
+		var e = assertThrows(AuthException.class, () -> {
+			cinema.login(JOSEUSER_USERNAME, "wrongPassword");
+			fail("A user has logged in with a wrong password");
+		});
+
+		assertEquals(Cinema.USER_OR_PASSWORD_ERROR, e.getMessage());
+	}
+
+	@Test
 	public void registerAUserNameTwice() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
+				tests.doNothingEmailProvider(), tests.doNothingToken());
 		registerUserJose(cinema);
 
 		var e = assertThrows(BusinessException.class, () -> {
@@ -129,12 +184,13 @@ public class CinemaTest {
 		var fakePaymenentProvider = tests.fakePaymenentProvider();
 		var fakeEmailProvider = tests.fakeEmailProvider();
 
-		var cinema = new Cinema(emf, fakePaymenentProvider, fakeEmailProvider);
+		var cinema = new Cinema(emf, fakePaymenentProvider, fakeEmailProvider,
+				tests.doNothingToken());
 
 		var movieInfo = tests.createSuperMovie(cinema);
 		long theaterId = createATheater(cinema);
 
-		var showInfo = cinema.addNewShowToMovie(movieInfo.id(),
+		var showInfo = cinema.addNewShowFor(movieInfo.id(),
 				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
 
 		var joseId = registerUserJose(cinema);
@@ -163,7 +219,7 @@ public class CinemaTest {
 	@Test
 	public void rateMovie() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
+				tests.doNothingEmailProvider(), tests.doNothingToken());
 
 		var movieInfo = tests.createSuperMovie(cinema);
 
@@ -179,7 +235,8 @@ public class CinemaTest {
 	@Test
 	public void retrieveRatesInvalidPageNumber() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider(), 10 /* page size */);
+				tests.doNothingEmailProvider(), tests.doNothingToken(),
+				10 /* page size */);
 		var e = assertThrows(BusinessException.class, () -> {
 			cinema.pagedRatesOfOrderedDate(1L, 0);
 		});
@@ -191,7 +248,8 @@ public class CinemaTest {
 	@Test
 	public void retrievePagedRatesFromMovie() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider(), 2 /* page size */);
+				tests.doNothingEmailProvider(), tests.doNothingToken(),
+				2 /* page size */);
 
 		var movieInfo = tests.createSuperMovie(cinema);
 
@@ -213,7 +271,8 @@ public class CinemaTest {
 	@Test
 	public void retrieveAllPagedRates() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider(), 2 /* page size */);
+				tests.doNothingEmailProvider(), tests.doNothingToken(),
+				2 /* page size */);
 
 		var superMovieInfo = tests.createSuperMovie(cinema);
 		var otherMovieInfo = tests.createOtherSuperMovie(cinema);
@@ -233,7 +292,7 @@ public class CinemaTest {
 	@Test
 	public void rateTheSameMovieTwice() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
+				tests.doNothingEmailProvider(), tests.doNothingToken());
 
 		var movieInfo = tests.createSuperMovie(cinema);
 		var joseId = registerUserJose(cinema);
@@ -251,7 +310,7 @@ public class CinemaTest {
 	@Test
 	public void retrieveMovie() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider());
+				tests.doNothingEmailProvider(), tests.doNothingToken());
 
 		var superMovie = tests.createSuperMovie(cinema);
 
@@ -270,32 +329,79 @@ public class CinemaTest {
 	@Test
 	public void retrieveAllMovies() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
-				tests.doNothingEmailProvider(), 1);
+				tests.doNothingEmailProvider(), tests.doNothingToken(), 1);
 
 		tests.createSuperMovie(cinema);
 		tests.createOtherSuperMovie(cinema);
 
-		var movies1 = cinema.moviesSortedByName(1);
+		var movies1 = cinema.pagedMoviesSortedByName(1);
 
 		assertEquals(1, movies1.size());
 		assertTrue(movies1.get(0).name().equals(SUPER_MOVIE_NAME));
+		assertEquals(2, movies1.get(0).genres().size());
+		assertEquals(2, movies1.get(0).actors().size());
 
-		var movies2 = cinema.moviesSortedByName(2);
+		var movies2 = cinema.pagedMoviesSortedByName(2);
 
 		assertEquals(1, movies2.size());
 		assertTrue(
 				movies2.get(0).name().equals(ForTests.OTHER_SUPER_MOVIE_NAME));
+		assertEquals(2, movies2.get(0).genres().size());
+		assertEquals(1, movies2.get(0).actors().size());
+	}
+
+	@Test
+	public void searchMovieByName() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), tests.doNothingToken(), 10);
+
+		tests.createSuperMovie(cinema);
+		tests.createOtherSuperMovie(cinema);
+
+		var movies = cinema.pagedSearchMovieByName("another", 1);
+
+		assertEquals(1, movies.size());
+		assertTrue(
+				movies.get(0).name().equals(ForTests.OTHER_SUPER_MOVIE_NAME));
+	}
+
+	@Test
+	public void searchMovieByNameNotFound() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), tests.doNothingToken(), 10);
+
+		tests.createSuperMovie(cinema);
+		tests.createOtherSuperMovie(cinema);
+
+		var movies = cinema.pagedSearchMovieByName("not_found_movie", 1);
+
+		assertEquals(0, movies.size());
+	}
+
+	@Test
+	public void userProfileFrom() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), tests.doNothingToken(), 10);
+		var userId = registerUserJose(cinema);
+
+		var profile = cinema.profileFrom(userId);
+		assertEquals(JOSEUSER_USERNAME, profile.username());
+		assertEquals(JOSEUSER_EMAIL, profile.email());
+		assertEquals(JOSEUSER_NAME + " " + JOSEUSER_SURNAME,
+				profile.fullname());
+
 	}
 
 	private Long registerUserJose(Cinema cinema) {
-		var joseId = cinema.registerUser("Jose", "aSurname", JOSEUSER_EMAIL,
+		var joseId = cinema.registerUser(JOSEUSER_NAME, JOSEUSER_SURNAME,
+				JOSEUSER_EMAIL,
 				JOSEUSER_USERNAME,
-				"password12345679", "password12345679");
+				JOSEUSER_PASS, JOSEUSER_PASS);
 		return joseId;
 	}
 
 	private Long registerUserAntonio(Cinema cinema) {
-		var userId = cinema.registerUser("Antonio", "aSurname",
+		var userId = cinema.registerUser("Antonio", JOSEUSER_SURNAME,
 				"antonio@bla.com",
 				ANTONIOUSER_USERNAME,
 				"password12345678", "password12345678");
@@ -303,7 +409,8 @@ public class CinemaTest {
 	}
 
 	private Long registerAUser(Cinema cinema) {
-		var userId = cinema.registerUser("aUser", "aSurname", "enrique@bla.com",
+		var userId = cinema.registerUser("aUser", JOSEUSER_SURNAME,
+				"enrique@bla.com",
 				"username",
 				"password12345678", "password12345678");
 		return userId;

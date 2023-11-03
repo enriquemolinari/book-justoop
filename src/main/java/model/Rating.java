@@ -29,7 +29,11 @@ class Rating {
 		this.totalUserVotes++;
 	}
 
-	public float actualRate() {
+	String actualRateAsString() {
+		return String.valueOf(this.rateValue);
+	}
+
+	float actualRate() {
 		return this.rateValue;
 	}
 
@@ -39,5 +43,9 @@ class Rating {
 
 	public boolean hastTotalVotesOf(int votes) {
 		return this.totalUserVotes == votes;
+	}
+
+	int totalVotes() {
+		return this.totalUserVotes;
 	}
 }

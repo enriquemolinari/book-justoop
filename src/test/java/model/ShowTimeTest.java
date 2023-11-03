@@ -11,6 +11,8 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import model.api.BusinessException;
+
 public class ShowTimeTest {
 
 	private final ForTests tests = new ForTests();
