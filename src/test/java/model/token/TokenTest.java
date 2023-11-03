@@ -1,4 +1,4 @@
-package model;
+package model.token;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import dev.paseto.jpaseto.lang.Keys;
 import model.api.AuthException;
+import model.token.PasetoToken;
 
 public class TokenTest {
 

@@ -1,4 +1,4 @@
-package web;
+package spring.web;
 
 import java.time.LocalDateTime;
 import java.util.List;

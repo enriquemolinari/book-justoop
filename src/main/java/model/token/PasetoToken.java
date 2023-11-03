@@ -1,4 +1,4 @@
-package model;
+package model.token;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -8,6 +8,7 @@ import java.util.Map;
 import dev.paseto.jpaseto.Paseto;
 import dev.paseto.jpaseto.Pasetos;
 import dev.paseto.jpaseto.lang.Keys;
+import model.DateTimeProvider;
 import model.api.AuthException;
 import model.api.Token;
 
