@@ -1,4 +1,4 @@
-package spring.web;
+package spring.main;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

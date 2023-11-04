@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import model.api.BusinessException;
+import model.api.DateTimeProvider;
 import model.api.DetailedShowInfo;
 import model.api.ShowInfo;
 

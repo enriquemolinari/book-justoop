@@ -1,4 +1,4 @@
-package spring.web;
+package spring.main;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -9,12 +9,12 @@ import java.util.Set;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import model.Actor;
-import model.DateTimeProvider;
 import model.Movie;
 import model.Person;
 import model.ShowTime;
 import model.Theater;
 import model.User;
+import model.api.DateTimeProvider;
 import model.api.Genre;
 
 public class SetUpDb {

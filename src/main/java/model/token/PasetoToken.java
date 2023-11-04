@@ -8,8 +8,8 @@ import java.util.Map;
 import dev.paseto.jpaseto.Paseto;
 import dev.paseto.jpaseto.Pasetos;
 import dev.paseto.jpaseto.lang.Keys;
-import model.DateTimeProvider;
 import model.api.AuthException;
+import model.api.DateTimeProvider;
 import model.api.Token;
 
 public class PasetoToken implements Token {

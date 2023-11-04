@@ -2,10 +2,13 @@ package spring.web;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import model.api.AuthException;
 import model.api.CinemaSystem;
 import model.api.DetailedShowInfo;
 import model.api.MovieInfo;
@@ -25,6 +29,7 @@ import model.api.UserProfile;
 @RestController
 public class CinemaSystemRestController {
 
+	private static final String AUTHENTICATION_REQUIRED = "You must be logged in to perform this action...";
 	private static final String TOKEN_COOKIE_NAME = "token";
 	CinemaSystem cinema;
 
@@ -73,9 +78,38 @@ public class CinemaSystemRestController {
 		return ResponseEntity.ok().headers(headers).body(profile);
 	}
 
-	// requiere authentication
-	// @PostMapping("/movies/{id}/rates")
-	// public ResponseEntity<UserMovieRate> rateMovie(@PathVariable Long id,) {
-	//
-	// }
+	@PostMapping("/logout")
+	public ResponseEntity<Void> logout(
+			@CookieValue(required = false) String token) {
+		return ifAuthenticatedDo(token, (userId) -> {
+			var cookie = ResponseCookie.from(TOKEN_COOKIE_NAME, null)
+					.httpOnly(true).maxAge(0).build();
+			var headers = new HttpHeaders();
+			headers.add(HttpHeaders.COOKIE, cookie.toString());
+			return ResponseEntity.ok().headers(headers).build();
+		});
+
+	}
+
+	private <S> S ifAuthenticatedDo(String token, Function<Long, S> method) {
+		var userId = Optional.ofNullable(token).map(a -> {
+			var uid = this.cinema.userIdFrom(token);
+			return uid;
+		}).orElseThrow(() -> new AuthException(
+				AUTHENTICATION_REQUIRED));
+
+		return method.apply(userId);
+	}
+
+	@PostMapping("/movies/{id}/rates")
+	public ResponseEntity<UserMovieRate> rateMovie(
+			@CookieValue(required = false) String token,
+			@PathVariable Long id) {
+
+		var bla = ifAuthenticatedDo(token, userId -> {
+			return this.cinema.rateMovieBy(userId, id, 10, "");
+		});
+
+		return ResponseEntity.ok(bla);
+	}
 }

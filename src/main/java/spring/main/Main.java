@@ -1,11 +1,11 @@
-package spring.web;
+package spring.main;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"model.*", "web"})
+@ComponentScan(basePackages = {"model.*", "spring.*"})
 public class Main {
 
 	public static void main(String[] args) {

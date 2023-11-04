@@ -17,6 +17,7 @@ import model.api.AuthException;
 import model.api.BusinessException;
 import model.api.CinemaSystem;
 import model.api.CreditCardPaymentGateway;
+import model.api.DateTimeProvider;
 import model.api.DetailedShowInfo;
 import model.api.EmailProvider;
 import model.api.Genre;
