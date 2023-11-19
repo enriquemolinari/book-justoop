@@ -105,7 +105,6 @@ public class ShowTime {
 				.collect(Collectors.toUnmodifiableSet());
 	}
 
-	// package protected scope to not be called from outside this package
 	void reserveSeatsFor(User user, Set<Integer> selectedSeats) {
 		var selection = filterSelectedSeats(selectedSeats);
 		checkAllSelectedSeatsAreAvailable(selection);
@@ -206,12 +205,13 @@ public class ShowTime {
 	}
 
 	public ShowInfo toShowInfo() {
-		return new ShowInfo(this.id, this.startTime, this.screenedIn.name(),
+		return new ShowInfo(this.id, startDateTime(),
 				this.price);
 	}
 
 	public DetailedShowInfo toDetailedInfo() {
 		return new DetailedShowInfo(this.toShowInfo(),
+				this.screenedIn.name(),
 				this.seatsForThisShow.stream().map(s -> s.toSeat()).toList());
 	}
 

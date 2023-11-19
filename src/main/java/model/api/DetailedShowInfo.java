@@ -2,6 +2,7 @@ package model.api;
 
 import java.util.List;
 
-public record DetailedShowInfo(ShowInfo info, List<Seat> currentSeats) {
+public record DetailedShowInfo(ShowInfo info, String theater,
+		List<Seat> currentSeats) {
 
 }

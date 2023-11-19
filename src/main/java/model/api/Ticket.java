@@ -3,6 +3,12 @@ package model.api;
 import java.util.List;
 import java.util.Set;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+//TODO: getters para pasar a json
+//TODO: en dos sessiones diferentes compro otros asientos y 
+//me duevuelve todos los que compre antes y ahora
+@Getter(value = AccessLevel.PUBLIC)
 public class Ticket {
 	private float total;
 	private int pointsWon;

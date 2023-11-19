@@ -97,22 +97,6 @@ public class Cinema implements CinemaSystem {
 	}
 
 	@Override
-	public List<MovieInfo> pagedMoviesSortedByName(int pageNumber) {
-		return inTx(em -> {
-			var query = em.createQuery("from Movie m "
-					+ "join fetch m.actors "
-					+ "join fetch m.actors.person order by m.name asc",
-					Movie.class);
-
-			query.setFirstResult((pageNumber - 1) * this.pageSize);
-			query.setMaxResults(this.pageSize);
-
-			var list = query.getResultList();
-			return list.stream().map(m -> m.toInfo()).toList();
-		});
-	}
-
-	@Override
 	public MovieInfo movie(Long id) {
 		return inTx(em -> {
 			try {
@@ -219,7 +203,7 @@ public class Cinema implements CinemaSystem {
 					totalAmount);
 
 			var sale = new Sale(totalAmount, user, showTime,
-					showTime.pointsToEarn());
+					showTime.pointsToEarn(), selectedSeats);
 
 			return sale.ticket();
 		});
@@ -383,7 +367,7 @@ public class Cinema implements CinemaSystem {
 					"select m from Movie m "
 							// a trigram index is required
 							// on m.name to make this perform fine
-							+ "where m.name like ?1 "
+							+ "where lower(m.name) like lower(?1) "
 							+ "order by m.name desc",
 					Movie.class);
 			q.setParameter(1, "%" + fullOrPartmovieName + "%");
@@ -400,17 +384,35 @@ public class Cinema implements CinemaSystem {
 	}
 
 	@Override
-	public List<MovieInfo> pagedMoviesOrderedByRate(int pageNumber) {
+	public List<MovieInfo> pagedMoviesSortedByName(int pageNumber) {
+		checkPageNumberIsGreaterThanZero(pageNumber);
+		return pagedMoviesSortedBy(pageNumber, "order by m.name");
+	}
+
+	@Override
+	public List<MovieInfo> pagedMoviesSortedByReleaseDate(int pageNumber) {
+		return pagedMoviesSortedBy(pageNumber, "order by m.releaseDate desc");
+	}
+
+	private List<MovieInfo> pagedMoviesSortedBy(int pageNumber,
+			String orderByClause) {
+		checkPageNumberIsGreaterThanZero(pageNumber);
 		return inTx(em -> {
 			var q = em.createQuery(
 					"select m from Movie m "
-							+ "order by m.rating.totalUserVotes desc, m.rating.rateValue desc",
+							+ orderByClause,
 					Movie.class);
 			q.setFirstResult((pageNumber - 1) * this.pageSize);
 			q.setMaxResults(this.pageSize);
 
 			return q.getResultList().stream().map(m -> m.toInfo()).toList();
 		});
+	}
+
+	@Override
+	public List<MovieInfo> pagedMoviesSortedByRate(int pageNumber) {
+		return pagedMoviesSortedBy(pageNumber,
+				"order by m.rating.totalUserVotes desc, m.rating.rateValue desc");
 	}
 
 	private <T> T inTx(Function<EntityManager, T> toExecute) {

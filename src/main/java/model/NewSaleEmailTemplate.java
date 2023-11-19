@@ -42,7 +42,7 @@ public class NewSaleEmailTemplate {
 		body.append("Seats: ").append(seatsBought.stream()
 				.map(s -> s.toString()).collect(Collectors.joining(",")));
 		body.append(System.lineSeparator());
-		body.append("Showtime: ").append(showStartTime);
+		body.append("Show time: ").append(showStartTime);
 		body.append(System.lineSeparator());
 		body.append("Total paid: ").append(totalAmount);
 		return body.toString();

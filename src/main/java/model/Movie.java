@@ -165,7 +165,8 @@ public class Movie {
 	}
 
 	public MovieShows toMovieShow() {
-		return new MovieShows(this.id, this.name, this.duration,
+		return new MovieShows(this.id, this.name,
+				new MovieDurationFormat(duration).toString(),
 				genreAsListOfString(), this.showTimes.stream()
 						.map(show -> show.toShowInfo()).toList());
 	}

@@ -2,6 +2,7 @@ package model;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -39,11 +40,14 @@ class Sale {
 	@JoinColumn(name = "id_showtime")
 	private ShowTime soldShow;
 
+	private Set<Integer> selectedSeats;
+
 	public Sale(float totalAmount, User userThatPurchased, ShowTime soldShow,
-			int pointsWon) {
+			int pointsWon, Set<Integer> selectedSeats) {
 		this.total = totalAmount;
 		this.purchaser = userThatPurchased;
 		this.soldShow = soldShow;
+		this.selectedSeats = selectedSeats;
 		this.salesDate = LocalDateTime.now();
 		this.pointsWon = pointsWon;
 		userThatPurchased.newPurchase(this, pointsWon);
@@ -62,7 +66,7 @@ class Sale {
 	}
 
 	List<Integer> confirmedSeatNumbers() {
-		return this.soldShow.confirmedSeatsFrom(this.purchaser);
+		return this.selectedSeats.stream().toList();
 	}
 
 	public Ticket ticket() {

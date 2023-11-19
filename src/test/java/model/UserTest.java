@@ -29,6 +29,30 @@ public class UserTest {
 	}
 
 	@Test
+	public void userNameIsInvalidWithNull() {
+		Exception e = assertThrows(BusinessException.class, () -> {
+			new User(
+					new Person("Enrique", "Molinari",
+							"enrique.molinari@gmail.com"),
+					null, "Ab138RtoUjkL", "Ab138RtoUjkL");
+		});
+
+		assertTrue(e.getMessage().equals(User.INVALID_USERNAME));
+	}
+
+	@Test
+	public void userNameIsInvalid() {
+		Exception e = assertThrows(BusinessException.class, () -> {
+			new User(
+					new Person("Enrique", "Molinari",
+							"enrique.molinari@gmail.com"),
+					"", "Ab138RtoUjkL", "Ab138RtoUjkL");
+		});
+
+		assertTrue(e.getMessage().equals(User.INVALID_USERNAME));
+	}
+
+	@Test
 	public void userEmailIsInvalid() {
 		Exception e = assertThrows(BusinessException.class, () -> {
 			new User(

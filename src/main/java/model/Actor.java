@@ -18,8 +18,8 @@ import lombok.Setter;
 @Getter(value = AccessLevel.PRIVATE)
 public class Actor {
 
-	public static final String NAME_INVALID = "name must not be blank";
-	public static final String CHARACTER_NAME_INVALID = "character name must not be blank";
+	static final String NAME_INVALID = "name must not be blank";
+	static final String CHARACTER_NAME_INVALID = "character name must not be blank";
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

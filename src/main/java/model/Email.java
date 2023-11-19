@@ -14,8 +14,8 @@ import model.api.BusinessException;
 class Email {
 
 	private String email;
-	static String NOT_VALID_EMAIL = "Email address is not valid";
-	private static String REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
+	static final String NOT_VALID_EMAIL = "Email address is not valid";
+	private static final String REGEX = "^[\\w-_\\.+]*[\\w-_\\.]\\@([\\w]+\\.)+[\\w]+[\\w]$";
 
 	public Email(String email) {
 		if (!email.matches(REGEX)) {

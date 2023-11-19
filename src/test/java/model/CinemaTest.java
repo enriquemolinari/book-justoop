@@ -62,6 +62,7 @@ public class CinemaTest {
 				.showsUntil(LocalDateTime.of(2024, 10, 10, 13, 31));
 
 		assertEquals(1, movieShows.size());
+		assertEquals("1hr 49mins", movieShows.get(0).duration());
 		assertEquals(1, movieShows.get(0).shows().size());
 		assertTrue(movieShows.get(0).shows().get(0).price() == 10f);
 		assertTrue(movieShows.get(0).movieName()
@@ -82,7 +83,7 @@ public class CinemaTest {
 
 		var userId = registerAUser(cinema);
 
-		var info = cinema.reserve(userId, showInfo.idShow(), Set.of(1, 5));
+		var info = cinema.reserve(userId, showInfo.showId(), Set.of(1, 5));
 
 		assertTrue(info.currentSeats().contains(new Seat(1, false)));
 		assertTrue(info.currentSeats().contains(new Seat(2, true)));
@@ -105,9 +106,9 @@ public class CinemaTest {
 
 		var userId = registerAUser(cinema);
 
-		cinema.reserve(userId, showInfo.idShow(), Set.of(1, 5));
+		cinema.reserve(userId, showInfo.showId(), Set.of(1, 5));
 
-		var info = cinema.show(showInfo.idShow());
+		var info = cinema.show(showInfo.showId());
 
 		assertTrue(info.currentSeats().contains(new Seat(1, false)));
 		assertTrue(info.currentSeats().contains(new Seat(2, true)));
@@ -130,10 +131,10 @@ public class CinemaTest {
 		var userId = registerAUser(cinema);
 		var joseId = registerUserJose(cinema);
 
-		cinema.reserve(userId, showInfo.idShow(), Set.of(1, 5));
+		cinema.reserve(userId, showInfo.showId(), Set.of(1, 5));
 
 		var e = assertThrows(BusinessException.class, () -> {
-			cinema.reserve(joseId, showInfo.idShow(), Set.of(1, 4, 3));
+			cinema.reserve(joseId, showInfo.showId(), Set.of(1, 4, 3));
 			fail("I have reserved an already reserved seat");
 		});
 
@@ -195,9 +196,9 @@ public class CinemaTest {
 
 		var joseId = registerUserJose(cinema);
 
-		cinema.reserve(joseId, showInfo.idShow(), Set.of(1, 5));
+		cinema.reserve(joseId, showInfo.showId(), Set.of(1, 5));
 
-		var ticket = cinema.pay(joseId, showInfo.idShow(), Set.of(1, 5),
+		var ticket = cinema.pay(joseId, showInfo.showId(), Set.of(1, 5),
 				JOSEUSER_CREDIT_CARD_NUMBER,
 				JOSEUSER_CREDIT_CARD_EXPIRITY,
 				JOSEUSER_CREDIT_CARD_SEC_CODE);
@@ -282,7 +283,7 @@ public class CinemaTest {
 		cinema.rateMovieBy(joseId, superMovieInfo.id(), 1, "very bad movie");
 		cinema.rateMovieBy(joseId, otherMovieInfo.id(), 3, "fine movie");
 
-		var movies = cinema.pagedMoviesOrderedByRate(1);
+		var movies = cinema.pagedMoviesSortedByRate(1);
 
 		assertEquals(2, movies.size());
 		assertEquals(ForTests.OTHER_SUPER_MOVIE_NAME, movies.get(0).name());
@@ -324,6 +325,21 @@ public class CinemaTest {
 				.contains(SUPER_MOVIE_ACTOR_CARLOS));
 		assertTrue(movie.name().equals(SUPER_MOVIE_NAME));
 		assertTrue(movie.plot().equals(SUPER_MOVIE_PLOT));
+	}
+
+	@Test
+	public void moviesSortedByReleaseDate() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), tests.doNothingToken(), 1);
+
+		tests.createSuperMovie(cinema);
+		tests.createOtherSuperMovie(cinema);
+
+		var movies = cinema.pagedMoviesSortedByReleaseDate(1);
+
+		assertEquals(1, movies.size());
+		assertTrue(
+				movies.get(0).name().equals(ForTests.SUPER_MOVIE_NAME));
 	}
 
 	@Test

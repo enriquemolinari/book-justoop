@@ -30,6 +30,7 @@ import model.api.UserProfile;
 @EqualsAndHashCode(of = {"userName"})
 public class User {
 
+	static final String INVALID_USERNAME = "A valid username must be provided";
 	static final String CAN_NOT_CHANGE_PASSWORD = "Some of the provided information is not valid to change the password";
 	static final String POINTS_MUST_BE_GREATER_THAN_ZERO = "Points must be greater than zero";
 	static final String PASSWORDS_MUST_BE_EQUALS = "Passwords must be equals";
@@ -54,7 +55,8 @@ public class User {
 			String repeatPassword) {
 		checkPasswordsMatch(password, repeatPassword);
 		this.person = person;
-		this.userName = new NotBlankString(userName, "").value();
+		this.userName = new NotBlankString(userName,
+				INVALID_USERNAME).value();
 		this.password = new Password(password);
 		this.points = 0;
 		this.purchases = new ArrayList<>();

@@ -12,9 +12,9 @@ public interface CinemaSystem {
 
 	List<MovieInfo> pagedMoviesSortedByName(int pageNumber);
 
-	List<MovieInfo> pagedMoviesOrderedByRate(int pageNumber);
+	List<MovieInfo> pagedMoviesSortedByRate(int pageNumber);
 
-	// List<MovieInfo> pagedMoviesSortedByReleaseDate(int pageNumber);
+	List<MovieInfo> pagedMoviesSortedByReleaseDate(int pageNumber);
 
 	MovieInfo movie(Long id);
 
