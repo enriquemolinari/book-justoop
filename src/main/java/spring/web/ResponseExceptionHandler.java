@@ -1,5 +1,7 @@
 package spring.web;
 
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -12,23 +14,25 @@ import model.api.AuthException;
 @ControllerAdvice
 public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
+	private static final String MESSAGE_KEY = "message";
+
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<String> handleAllMyException(
+	public ResponseEntity<Object> handleAllMyException(
 			Exception ex,
 			WebRequest request) {
 
-		return new ResponseEntity<String>(
-				ex.getMessage(),
+		return new ResponseEntity<Object>(Map.of(MESSAGE_KEY,
+				ex.getMessage()),
 				HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@ExceptionHandler(AuthException.class)
-	public ResponseEntity<String> handleAllBusinessExceptions(
+	public ResponseEntity<Object> handleAllBusinessExceptions(
 			Exception ex,
 			WebRequest request) {
 
-		return new ResponseEntity<String>(
-				ex.getMessage(),
+		return new ResponseEntity<Object>(Map.of(MESSAGE_KEY,
+				ex.getMessage()),
 				HttpStatus.UNAUTHORIZED);
 	}
 }

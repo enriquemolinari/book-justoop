@@ -211,6 +211,10 @@ public class Movie {
 				+ aString.substring(1).toLowerCase();
 	}
 
+	int duration() {
+		return this.duration;
+	}
+
 	LocalDateTime releaseDateAsDateTime() {
 		return this.releaseDate.atTime(0, 0);
 	}

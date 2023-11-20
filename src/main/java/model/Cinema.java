@@ -39,7 +39,7 @@ public class Cinema implements CinemaSystem {
 	static final String USER_HAS_ALREADY_RATE = "The user has already rate the movie";
 	static final String PAGE_NUMBER_MUST_BE_GREATER_THAN_ZERO = "page number must be greater than zero";
 	private static final int DEFAULT_PAGE_SIZE = 20;
-	static final String USER_OR_PASSWORD_ERROR = "Invalid username or password";
+	public static final String USER_OR_PASSWORD_ERROR = "Invalid username or password";
 
 	private EntityManagerFactory emf;
 	private CreditCardPaymentGateway paymentGateway;

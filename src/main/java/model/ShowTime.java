@@ -205,7 +205,10 @@ public class ShowTime {
 	}
 
 	public ShowInfo toShowInfo() {
-		return new ShowInfo(this.id, startDateTime(),
+		return new ShowInfo(this.id, movieName(),
+				new MovieDurationFormat(movieToBeScreened.duration())
+						.toString(),
+				startDateTime(),
 				this.price);
 	}
 

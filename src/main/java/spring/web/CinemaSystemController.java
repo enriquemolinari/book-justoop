@@ -31,7 +31,7 @@ import model.api.UserProfile;
 @RestController
 public class CinemaSystemController {
 
-	private static final String AUTHENTICATION_REQUIRED = "You must be logged in to perform this action...";
+	public static final String AUTHENTICATION_REQUIRED = "You must be logged in to perform this action...";
 	private static final String TOKEN_COOKIE_NAME = "token";
 	CinemaSystem cinema;
 

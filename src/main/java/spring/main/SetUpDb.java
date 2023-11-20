@@ -39,7 +39,7 @@ public class SetUpDb {
 			var enrique = new Person("Enrique", "Molinari",
 					"enrique.molinari@gmail.com");
 			var josefina = new Person("Josefina", "Simini",
-					"jsimini@gmail.com");
+					"jsimini@mymovies.com");
 			var lucia = new Person("Lucia", "Molimini", "lu@mymovies.com");
 			var nico = new Person("Nicolas", "Molimini", "nico@mymovies.com");
 			var camilo = new Person("Camilo", "Fernandez", "cami@mymovies.com");

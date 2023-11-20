@@ -1,8 +1,11 @@
 package spring.main;
 
+import java.time.YearMonth;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import jakarta.persistence.EntityManagerFactory;
 import model.Cinema;
@@ -16,14 +19,30 @@ public class AppConfiguration {
 
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
-	private String secret = "nXXh3Xjr2T0ofFilg3kw8BwDEyHmS6OIe4cjWUm2Sm0=";
+	private static String SECRET = "nXXh3Xjr2T0ofFilg3kw8BwDEyHmS6OIe4cjWUm2Sm0=";
 
 	@Bean
+	@Profile("default")
 	public CinemaSystem create() {
 		addSampleData();
 		return new Cinema(entityManagerFactory, new PleasePayPaymentProvider(),
 				new TheBestEmailProvider(),
-				new PasetoToken(secret), 2 /*
+				new PasetoToken(SECRET), 10 /*
+											 * page size
+											 */);
+	}
+
+	@Bean
+	@Profile("test")
+	public CinemaSystem createForTest() {
+		addSampleData();
+		return new Cinema(entityManagerFactory,
+				(String creditCardNumber, YearMonth expire, String securityCode,
+						float totalAmount) -> {
+				},
+				(String to, String subject, String body) -> {
+				},
+				new PasetoToken(SECRET), 2 /*
 											 * page size
 											 */);
 	}

@@ -110,6 +110,8 @@ public class CinemaTest {
 
 		var info = cinema.show(showInfo.showId());
 
+		assertTrue(info.info().movieName().equals(SUPER_MOVIE_NAME));
+		assertTrue(info.info().movieDuration().equals("1hr 49mins"));
 		assertTrue(info.currentSeats().contains(new Seat(1, false)));
 		assertTrue(info.currentSeats().contains(new Seat(2, true)));
 		assertTrue(info.currentSeats().contains(new Seat(3, true)));
