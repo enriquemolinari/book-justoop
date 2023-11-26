@@ -5,25 +5,26 @@ import java.util.Set;
 
 import lombok.AccessLevel;
 import lombok.Getter;
-//TODO: getters para pasar a json
-//TODO: en dos sessiones diferentes compro otros asientos y 
-//me duevuelve todos los que compre antes y ahora
 @Getter(value = AccessLevel.PUBLIC)
 public class Ticket {
 	private float total;
 	private int pointsWon;
-	private String formattedSalesDate;
-	private String userName;
+	private String salesDate;
+	private String username;
 	private List<Integer> payedSeats;
+	private String movieName;
+	private String showStartTime;
 
 	public Ticket(float total, int pointsWon,
 			String formattedSalesDate, String userName,
-			List<Integer> payedSeats) {
+			List<Integer> payedSeats, String movieName, String showStartTime) {
 		this.total = total;
 		this.pointsWon = pointsWon;
-		this.formattedSalesDate = formattedSalesDate;
-		this.userName = userName;
+		this.salesDate = formattedSalesDate;
+		this.username = userName;
 		this.payedSeats = payedSeats;
+		this.movieName = movieName;
+		this.showStartTime = showStartTime;
 	}
 
 	public boolean hasSeats(Set<Integer> seats) {
@@ -31,7 +32,7 @@ public class Ticket {
 	}
 
 	public boolean isPurchaserUserName(String aUserName) {
-		return this.userName.equals(aUserName);
+		return this.username.equals(aUserName);
 	}
 
 	public float total() {
