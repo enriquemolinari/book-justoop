@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 
 import dev.paseto.jpaseto.lang.Keys;
 import model.api.AuthException;
-import model.token.PasetoToken;
 
 public class TokenTest {
 

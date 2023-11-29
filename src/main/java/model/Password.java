@@ -22,6 +22,7 @@ class Password {
 		if (pwd.length() < 12) {
 			throw new BusinessException(NOT_VALID_PASSWORD);
 		}
+		// hash password before assign !
 		this.password = password;
 	}
 

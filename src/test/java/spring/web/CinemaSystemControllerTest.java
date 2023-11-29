@@ -279,7 +279,6 @@ public class CinemaSystemControllerTest {
 		rateRequestBody.put(COMMENT_KEY, "a comment...");
 
 		var response = given().contentType(JSON_CONTENT_TYPE)
-				.cookie(TOKEN_COOKIE_NAME, "non sense cookie value")
 				.body(rateRequestBody.toString())
 				.post(URL + "/movies/1/rate");
 

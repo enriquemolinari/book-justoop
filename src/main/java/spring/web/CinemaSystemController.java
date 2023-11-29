@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,13 +26,12 @@ import model.api.Ticket;
 import model.api.UserMovieRate;
 import model.api.UserProfile;
 
-@CrossOrigin(origins = {"http://localhost:3000"}, allowCredentials = "true")
 @RestController
 public class CinemaSystemController {
 
 	public static final String AUTHENTICATION_REQUIRED = "You must be logged in to perform this action...";
 	private static final String TOKEN_COOKIE_NAME = "token";
-	CinemaSystem cinema;
+	private CinemaSystem cinema;
 
 	public CinemaSystemController(CinemaSystem cinema) {
 		this.cinema = cinema;

@@ -19,6 +19,7 @@ public class AppConfiguration {
 
 	@Autowired
 	private EntityManagerFactory entityManagerFactory;
+	// this secret should not be here
 	private static String SECRET = "nXXh3Xjr2T0ofFilg3kw8BwDEyHmS6OIe4cjWUm2Sm0=";
 
 	@Bean
@@ -35,6 +36,7 @@ public class AppConfiguration {
 	@Bean
 	@Profile("test")
 	public CinemaSystem createForTest() {
+		String ANY_SECRET = "Kdj5zuBIBBgcWpv9zjKOINl2yUKUXVKO+SkOVE3VuZ4=";
 		addSampleData();
 		return new Cinema(entityManagerFactory,
 				(String creditCardNumber, YearMonth expire, String securityCode,
@@ -42,9 +44,10 @@ public class AppConfiguration {
 				},
 				(String to, String subject, String body) -> {
 				},
-				new PasetoToken(SECRET), 2 /*
-											 * page size
-											 */);
+				new PasetoToken(ANY_SECRET),
+				2 /*
+					 * page size
+					 */);
 	}
 
 	private void addSampleData() {
