@@ -3,7 +3,7 @@ package model;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public class FormattedDate {
+class FormattedDate {
 
 	private static String format = "MM-dd-yyyy";
 	private LocalDate dateTime;

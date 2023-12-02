@@ -18,7 +18,7 @@ import lombok.Setter;
 @Getter(value = AccessLevel.PRIVATE)
 @Setter(value = AccessLevel.PRIVATE)
 @NoArgsConstructor
-public class LoginAudit {
+class LoginAudit {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
