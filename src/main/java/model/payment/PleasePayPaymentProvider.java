@@ -2,9 +2,9 @@ package model.payment;
 
 import java.time.YearMonth;
 
-import model.api.CreditCardPaymentGateway;
+import model.api.CreditCardPaymentProvider;
 
-public class PleasePayPaymentProvider implements CreditCardPaymentGateway {
+public class PleasePayPaymentProvider implements CreditCardPaymentProvider {
 
 	@Override
 	public void pay(String creditCardNumber, YearMonth expire,

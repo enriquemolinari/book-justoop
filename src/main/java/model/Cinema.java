@@ -16,7 +16,7 @@ import jakarta.persistence.RollbackException;
 import model.api.AuthException;
 import model.api.BusinessException;
 import model.api.CinemaSystem;
-import model.api.CreditCardPaymentGateway;
+import model.api.CreditCardPaymentProvider;
 import model.api.DateTimeProvider;
 import model.api.DetailedShowInfo;
 import model.api.EmailProvider;
@@ -42,7 +42,7 @@ public class Cinema implements CinemaSystem {
 	public static final String USER_OR_PASSWORD_ERROR = "Invalid username or password";
 
 	private EntityManagerFactory emf;
-	private CreditCardPaymentGateway paymentGateway;
+	private CreditCardPaymentProvider paymentGateway;
 	private EmailProvider emailProvider;
 	private EntityManager em;
 	private int pageSize;
@@ -50,7 +50,7 @@ public class Cinema implements CinemaSystem {
 	private Token token;
 
 	public Cinema(EntityManagerFactory emf,
-			CreditCardPaymentGateway paymentGateway,
+			CreditCardPaymentProvider paymentGateway,
 			EmailProvider emailProvider, DateTimeProvider provider,
 			Token token,
 			int pageSize) {
@@ -63,14 +63,14 @@ public class Cinema implements CinemaSystem {
 	}
 
 	public Cinema(EntityManagerFactory emf,
-			CreditCardPaymentGateway paymentGateway,
+			CreditCardPaymentProvider paymentGateway,
 			EmailProvider emailProvider, Token token, int pageSize) {
 		this(emf, paymentGateway, emailProvider, DateTimeProvider.create(),
 				token, pageSize);
 	}
 
 	public Cinema(EntityManagerFactory emf,
-			CreditCardPaymentGateway paymentGateway,
+			CreditCardPaymentProvider paymentGateway,
 			EmailProvider emailProvider, Token token) {
 		this(emf, paymentGateway, emailProvider, DateTimeProvider.create(),
 				token, DEFAULT_PAGE_SIZE);

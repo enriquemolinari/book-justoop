@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import model.api.ActorInMovieName;
-import model.api.CreditCardPaymentGateway;
+import model.api.CreditCardPaymentProvider;
 import model.api.DateTimeProvider;
 import model.api.EmailProvider;
 import model.api.Genre;
@@ -60,7 +60,7 @@ public class ForTests {
 		return body.toString();
 	}
 
-	ShowTime createShowTime(CreditCardPaymentGateway gProvider,
+	ShowTime createShowTime(CreditCardPaymentProvider gProvider,
 			EmailProvider eProvider, int pointsToWin) {
 		return new ShowTime(
 				DateTimeProvider.create(), this.createSmallFishMovie(),
@@ -89,7 +89,7 @@ public class ForTests {
 		};
 	}
 
-	CreditCardPaymentGateway doNothingPaymentProvider() {
+	CreditCardPaymentProvider doNothingPaymentProvider() {
 		return (creditCardNumber, expire, securityCode, totalAmount) -> {
 		};
 	}
@@ -199,7 +199,7 @@ class EmailProviderFake implements EmailProvider {
 	}
 }
 
-class PaymenentProviderFake implements CreditCardPaymentGateway {
+class PaymenentProviderFake implements CreditCardPaymentProvider {
 	private String creditCardNumber;
 	private YearMonth expire;
 	private String securityCode;
