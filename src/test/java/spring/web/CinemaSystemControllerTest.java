@@ -38,6 +38,9 @@ import spring.main.Main;
 @ActiveProfiles(value = "test")
 public class CinemaSystemControllerTest {
 
+	private static final String CHANGE_PASS_BODY_CURRENT_PASS = "currentPassword";
+	private static final String CHANGE_PASS_BODY_PASSWORD1 = "newPassword1";
+	private static final String CHANGE_PASS_BODY_PASSWORD2 = "newPassword2";
 	private static final String INFO_KEY = "info";
 	private static final String SEAT_AVAILABLE_KEY = "available";
 	private static final String CURRENT_SEATS_KEY = "currentSeats";
@@ -89,6 +92,10 @@ public class CinemaSystemControllerTest {
 
 	private Response loginAsNicoPost() {
 		return loginAsPost("nico", "123456789012");
+	}
+
+	private Response loginAsLuciaPost() {
+		return loginAsPost("lucia", "123456789012");
 	}
 
 	private Response loginAsPost(String userName, String password) {
@@ -161,6 +168,58 @@ public class CinemaSystemControllerTest {
 
 		response.then().body(ERROR_MESSAGE_KEY,
 				is(CinemaSystemController.AUTHENTICATION_REQUIRED));
+	}
+
+	@Test
+	public void changePasswordFailPasswordsDoesNotMatch() throws JSONException {
+		var token = loginAsLuciaAndGetCookie();
+
+		JSONObject changePassRequestBody = changePasswordBody();
+		changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD2, "anotherpassword");
+
+		var response = given().contentType(JSON_CONTENT_TYPE)
+				.cookie(TOKEN_COOKIE_NAME, token)
+				.body(changePassRequestBody.toString())
+				.post(URL + "/users/changepassword");
+
+		assertEquals(500, response.statusCode());
+		response.then().body(ERROR_MESSAGE_KEY,
+				is("Passwords must be equals"));
+	}
+
+	@Test
+	public void changePasswordFailWhenNotAuthenticated() throws JSONException {
+		JSONObject changePassRequestBody = changePasswordBody();
+
+		var response = given().contentType(JSON_CONTENT_TYPE)
+				.body(changePassRequestBody.toString())
+				.post(URL + "/users/changepassword");
+
+		response.then().body(ERROR_MESSAGE_KEY,
+				is(CinemaSystemController.AUTHENTICATION_REQUIRED));
+	}
+
+	@Test
+	public void changePasswordOk() throws JSONException {
+		var token = loginAsLuciaAndGetCookie();
+
+		JSONObject changePassRequestBody = changePasswordBody();
+
+		var response = given().contentType(JSON_CONTENT_TYPE)
+				.cookie(TOKEN_COOKIE_NAME, token)
+				.body(changePassRequestBody.toString())
+				.post(URL + "/users/changepassword");
+
+		assertEquals(200, response.statusCode());
+	}
+
+	private JSONObject changePasswordBody()
+			throws JSONException {
+		JSONObject changePassRequestBody = new JSONObject();
+		changePassRequestBody.put(CHANGE_PASS_BODY_CURRENT_PASS, "123456789012");
+		changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD1, "9898989898989898");
+		changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD2, "9898989898989898");
+		return changePassRequestBody;
 	}
 
 	@Test
@@ -427,20 +486,22 @@ public class CinemaSystemControllerTest {
 		return seatsRequest;
 	}
 
+	private String loginAsLuciaAndGetCookie() {
+		var loginResponse = loginAsLuciaPost();
+		return getCookie(loginResponse);
+	}
+
 	private String loginAsNicoAndGetCookie() {
 		var loginResponse = loginAsNicoPost();
-		var token = getCookie(loginResponse);
-		return token;
+		return getCookie(loginResponse);
 	}
 
 	private String getCookie(Response loginResponse) {
-		var token = loginResponse.getCookie(TOKEN_COOKIE_NAME);
-		return token;
+		return loginResponse.getCookie(TOKEN_COOKIE_NAME);
 	}
 
 	private String loginAsJoseAndGetCookie() {
 		var loginResponse = loginAsJosePost();
-		var token = getCookie(loginResponse);
-		return token;
+		return getCookie(loginResponse);
 	}
 }

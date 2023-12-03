@@ -397,6 +397,30 @@ public class CinemaTest {
 	}
 
 	@Test
+	public void userChangePassword() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), tests.doNothingToken(), 10);
+		var userId = registerUserJose(cinema);
+
+		cinema.changePassword(userId, JOSEUSER_PASS, "123412341234",
+				"123412341234");
+	}
+
+	@Test
+	public void userChangePasswordDoesNotMatch() {
+		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
+				tests.doNothingEmailProvider(), tests.doNothingToken(), 10);
+		var userId = registerUserJose(cinema);
+
+		var e = assertThrows(BusinessException.class, () -> {
+			cinema.changePassword(userId, JOSEUSER_PASS, "123412341234",
+					"123412341294");
+		});
+
+		assertTrue(e.getMessage().equals(User.PASSWORDS_MUST_BE_EQUALS));
+	}
+
+	@Test
 	public void userProfileFrom() {
 		var cinema = new Cinema(emf, tests.doNothingPaymentProvider(),
 				tests.doNothingEmailProvider(), tests.doNothingToken(), 10);

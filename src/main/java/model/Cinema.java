@@ -465,4 +465,15 @@ public class Cinema implements CinemaSystem {
 			return userBy(userId).toProfile();
 		});
 	}
+
+	@Override
+	public void changePassword(Long userId, String currentPassword,
+			String newPassword1, String newPassword2) {
+		inTx(em -> {
+			userBy(userId).changePassword(currentPassword, newPassword1,
+					newPassword2);
+			// just to conform the compiler
+			return null;
+		});
+	}
 }

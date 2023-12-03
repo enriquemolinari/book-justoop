@@ -101,6 +101,20 @@ public class CinemaSystemController {
 		return ResponseEntity.ok(profile);
 	}
 
+	@PostMapping("/users/changepassword")
+	public ResponseEntity<Void> changePassword(
+			@CookieValue(required = false) String token,
+			@RequestBody ChangePasswordRequest passBody) {
+
+		ifAuthenticatedDo(token, userId -> {
+			cinema.changePassword(userId, passBody.currentPassword(),
+					passBody.newPassword1(), passBody.newPassword2());
+			return null;
+		});
+
+		return ResponseEntity.ok().build();
+	}
+
 	@GetMapping("/movies/{id}/rate")
 	public ResponseEntity<List<UserMovieRate>> pagedRatesOfOrderedDate(
 			@PathVariable Long id,

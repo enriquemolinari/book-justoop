@@ -53,6 +53,10 @@ public interface CinemaSystem {
 
 	Long userIdFrom(String token);
 
+	void changePassword(Long userId, String currentPassword,
+			String newPassword1,
+			String newPassword2);
+
 	UserProfile profileFrom(Long userId);
 
 	Long registerUser(String name, String surname, String email,
