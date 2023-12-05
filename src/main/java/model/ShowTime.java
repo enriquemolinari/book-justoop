@@ -201,7 +201,7 @@ public class ShowTime {
 	}
 
 	String startDateTime() {
-		return new DayTimeFormatted(this.startTime).toString();
+		return new FormattedDayTime(this.startTime).toString();
 	}
 
 	public ShowInfo toShowInfo() {

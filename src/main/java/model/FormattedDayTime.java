@@ -3,12 +3,12 @@ package model;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-class DayTimeFormatted {
+class FormattedDayTime {
 
 	private static String format = "MM/dd HH:mm";
 	private LocalDateTime dateTime;
 
-	public DayTimeFormatted(LocalDateTime dateTime) {
+	public FormattedDayTime(LocalDateTime dateTime) {
 		this.dateTime = dateTime;
 	}
 

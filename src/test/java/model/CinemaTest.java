@@ -213,7 +213,7 @@ public class CinemaTest {
 				ticket.total()));
 		var emailTemplate = new NewSaleEmailTemplate(ticket.total(),
 				JOSEUSER_USERNAME, Set.of(1, 5), SUPER_MOVIE_NAME,
-				new DayTimeFormatted(LocalDateTime.of(2024, 10, 10, 13, 30))
+				new FormattedDayTime(LocalDateTime.of(2024, 10, 10, 13, 30))
 						.toString());
 		assertTrue(fakeEmailProvider.hasBeanCalledWith(JOSEUSER_EMAIL,
 				emailTemplate.subject(), emailTemplate.body()));
