@@ -466,7 +466,7 @@ public class CinemaTest {
 	}
 
 	private Long registerUserAntonio(Cinema cinema) {
-		var userId = cinema.registerUser("Antonio", JOSEUSER_SURNAME,
+		var userId = cinema.registerUser("Antonio", "Antonio Surname",
 				"antonio@bla.com",
 				ANTONIOUSER_USERNAME,
 				"password12345678", "password12345678");
