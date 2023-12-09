@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Set;
@@ -56,10 +57,14 @@ public class CinemaTest {
 		long theaterId = createATheater(cinema);
 
 		cinema.addNewShowFor(movieInfo.id(),
-				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+				LocalDateTime.of(LocalDate.now().plusYears(1).getYear(), 10, 10,
+						13, 30),
+				10f, theaterId, 20);
 
 		var movieShows = cinema
-				.showsUntil(LocalDateTime.of(2024, 10, 10, 13, 31));
+				.showsUntil(
+						LocalDateTime.of(LocalDate.now().plusYears(1).getYear(),
+								10, 10, 13, 31));
 
 		assertEquals(1, movieShows.size());
 		assertEquals("1hr 49mins", movieShows.get(0).duration());
@@ -79,7 +84,9 @@ public class CinemaTest {
 		long theaterId = createATheater(cinema);
 
 		var showInfo = cinema.addNewShowFor(movieInfo.id(),
-				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+				LocalDateTime.of(LocalDate.now().plusYears(1).getYear(), 10, 10,
+						13, 30),
+				10f, theaterId, 20);
 
 		var userId = registerAUser(cinema);
 
@@ -102,7 +109,9 @@ public class CinemaTest {
 		long theaterId = createATheater(cinema);
 
 		var showInfo = cinema.addNewShowFor(movieInfo.id(),
-				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+				LocalDateTime.of(LocalDate.now().plusYears(1).getYear(), 10, 10,
+						13, 30),
+				10f, theaterId, 20);
 
 		var userId = registerAUser(cinema);
 
@@ -128,7 +137,9 @@ public class CinemaTest {
 		long theaterId = createATheater(cinema);
 
 		var showInfo = cinema.addNewShowFor(movieInfo.id(),
-				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+				LocalDateTime.of(LocalDate.now().plusYears(1).getYear(), 10, 10,
+						13, 30),
+				10f, theaterId, 20);
 
 		var userId = registerAUser(cinema);
 		var joseId = registerUserJose(cinema);
@@ -194,7 +205,9 @@ public class CinemaTest {
 		long theaterId = createATheater(cinema);
 
 		var showInfo = cinema.addNewShowFor(movieInfo.id(),
-				LocalDateTime.of(2024, 10, 10, 13, 30), 10f, theaterId, 20);
+				LocalDateTime.of(LocalDate.now().plusYears(1).getYear(), 10, 10,
+						13, 30),
+				10f, theaterId, 20);
 
 		var joseId = registerUserJose(cinema);
 
@@ -213,7 +226,8 @@ public class CinemaTest {
 				ticket.total()));
 		var emailTemplate = new NewSaleEmailTemplate(ticket.total(),
 				JOSEUSER_USERNAME, Set.of(1, 5), SUPER_MOVIE_NAME,
-				new FormattedDayTime(LocalDateTime.of(2024, 10, 10, 13, 30))
+				new FormattedDayTime(LocalDateTime.of(
+						LocalDate.now().plusYears(1).getYear(), 10, 10, 13, 30))
 						.toString());
 		assertTrue(fakeEmailProvider.hasBeanCalledWith(JOSEUSER_EMAIL,
 				emailTemplate.subject(), emailTemplate.body()));
