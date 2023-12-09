@@ -82,6 +82,20 @@ public class ShowTimeTest {
 	}
 
 	@Test
+	public void iCanReserveAnExpiredReservation() {
+		var aShow = tests.createShowForSmallFish(
+				// already expired reservation
+				() -> LocalDateTime.now().minusMinutes(6));
+		var carlos = createCarlosUser();
+		var jose = createJoseUser();
+
+		var seatsToReserve = Set.of(1, 2);
+		aShow.reserveSeatsFor(carlos, seatsToReserve);
+
+		aShow.reserveSeatsFor(jose, seatsToReserve);
+	}
+
+	@Test
 	public void reserveAnAvailableSeat() {
 		var aShow = tests.createShowForSmallFish();
 		var carlos = createCarlosUser();

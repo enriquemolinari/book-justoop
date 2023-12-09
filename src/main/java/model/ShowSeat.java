@@ -74,8 +74,10 @@ class ShowSeat {
 		return !isAvailable();
 	}
 
-	private boolean isAvailable() {
-		return !reserved && !confirmed;
+	public boolean isAvailable() {
+		return (!reserved || (reserved
+				&& LocalDateTime.now().isAfter(this.reservedUntil)))
+				&& !confirmed;
 	}
 
 	public void doConfirmForUser(User user) {

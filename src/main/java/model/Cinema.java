@@ -76,6 +76,7 @@ public class Cinema implements CinemaSystem {
 				token, DEFAULT_PAGE_SIZE);
 	}
 
+	@Override
 	public List<MovieShows> showsUntil(LocalDateTime untilTo) {
 		return inTx(em -> {
 			return movieShowsUntil(untilTo);
@@ -147,6 +148,7 @@ public class Cinema implements CinemaSystem {
 		});
 	}
 
+	@Override
 	public Long addNewTheater(String name, Set<Integer> seatsNumbers) {
 		return inTx(em -> {
 			var theater = new Theater(name, seatsNumbers);
@@ -155,6 +157,7 @@ public class Cinema implements CinemaSystem {
 		});
 	}
 
+	@Override
 	public ShowInfo addNewShowFor(Long movieId, LocalDateTime startTime,
 			float price, Long theaterId, int pointsToWin) {
 		return inTx(em -> {
