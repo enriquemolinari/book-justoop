@@ -231,6 +231,15 @@ public class CinemaTest {
 						.toString());
 		assertTrue(fakeEmailProvider.hasBeanCalledWith(JOSEUSER_EMAIL,
 				emailTemplate.subject(), emailTemplate.body()));
+
+		var detailedShow = cinema.show(showInfo.showId());
+
+		assertTrue(detailedShow.currentSeats().contains(new Seat(1, false)));
+		assertTrue(detailedShow.currentSeats().contains(new Seat(2, true)));
+		assertTrue(detailedShow.currentSeats().contains(new Seat(3, true)));
+		assertTrue(detailedShow.currentSeats().contains(new Seat(4, true)));
+		assertTrue(detailedShow.currentSeats().contains(new Seat(5, false)));
+
 	}
 
 	@Test
