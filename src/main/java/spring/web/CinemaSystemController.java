@@ -86,7 +86,7 @@ public class CinemaSystemController {
 		return ResponseEntity
 				.ok(cinema.registerUser(request.name(), request.surname(),
 						request.email(),
-						request.userName(), request.password(),
+						request.username(), request.password(),
 						request.repeatPassword()));
 	}
 

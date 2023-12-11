@@ -29,7 +29,7 @@ public class CinemaSystemController {
 		app.post("/logout", logout());
 		app.post("/movies/{id}/rate", rateMovie());
 		app.get("/shows/{id}", showDetail());
-		// TODO: finish with the endpoints
+		// finish with the other endpoints
 
 		app.exception(AuthException.class, (e, ctx) -> {
 			ctx.status(401);

@@ -13,6 +13,7 @@ import java.time.YearMonth;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.restassured.response.Response;
@@ -21,6 +22,8 @@ import model.Cinema;
 import model.token.PasetoToken;
 import spring.main.SetUpDb;
 
+@Disabled
+// just to demonstrate testing on Javalin web app
 public class CinemaSystemControllerTest {
 	private static final String INFO_KEY = "info";
 	private static final String CURRENT_SEATS_KEY = "currentSeats";

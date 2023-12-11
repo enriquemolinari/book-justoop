@@ -86,6 +86,19 @@ public class CinemaSystemControllerTest {
 				.cookie(TOKEN_COOKIE_NAME, containsString("v2.local"));
 	}
 
+	@Test
+	public void logoutOk() throws JSONException {
+		var token = loginAsJoseAndGetCookie();
+
+		var response = given().contentType(JSON_CONTENT_TYPE)
+				.cookie(TOKEN_COOKIE_NAME, token)
+				.post(URL + "/logout");
+
+		var cookie = response.getDetailedCookie(TOKEN_COOKIE_NAME);
+		assertEquals(0, cookie.getMaxAge());
+		assertEquals("", cookie.getValue());
+	}
+
 	private Response loginAsJosePost() {
 		return loginAsPost(USERNAME_JOSE, PASSWORD_JOSE);
 	}
@@ -127,6 +140,26 @@ public class CinemaSystemControllerTest {
 				is(Cinema.USER_OR_PASSWORD_ERROR));
 		assertFalse(response.cookies().containsKey(TOKEN_COOKIE_NAME));
 
+	}
+
+	@Test
+	public void registerUserOk() throws JSONException {
+		JSONObject registerRequestBody = new JSONObject();
+		registerRequestBody.put("name", "auser");
+		registerRequestBody.put("surname", "ausersurname");
+		registerRequestBody.put("email", "auser@ma.com");
+		registerRequestBody.put(USERNAME_KEY, "auniqueusername");
+		registerRequestBody.put(PASSWORD_KEY, "444467890124");
+		registerRequestBody.put("repeatPassword", "444467890124");
+
+		var response = given().contentType(JSON_CONTENT_TYPE)
+				.body(registerRequestBody.toString())
+				.post(URL + "/users/register");
+
+		response.then().statusCode(200);
+
+		loginAsPost("auniqueusername", "444467890124").then()
+				.cookie(TOKEN_COOKIE_NAME, containsString("v2.local"));
 	}
 
 	@Test
@@ -175,7 +208,8 @@ public class CinemaSystemControllerTest {
 		var token = loginAsLuciaAndGetCookie();
 
 		JSONObject changePassRequestBody = changePasswordBody();
-		changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD2, "anotherpassword");
+		changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD2,
+				"anotherpassword");
 
 		var response = given().contentType(JSON_CONTENT_TYPE)
 				.cookie(TOKEN_COOKIE_NAME, token)
@@ -216,9 +250,12 @@ public class CinemaSystemControllerTest {
 	private JSONObject changePasswordBody()
 			throws JSONException {
 		JSONObject changePassRequestBody = new JSONObject();
-		changePassRequestBody.put(CHANGE_PASS_BODY_CURRENT_PASS, "123456789012");
-		changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD1, "9898989898989898");
-		changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD2, "9898989898989898");
+		changePassRequestBody.put(CHANGE_PASS_BODY_CURRENT_PASS,
+				"123456789012");
+		changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD1,
+				"9898989898989898");
+		changePassRequestBody.put(CHANGE_PASS_BODY_PASSWORD2,
+				"9898989898989898");
 		return changePassRequestBody;
 	}
 
