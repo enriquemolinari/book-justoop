@@ -35,12 +35,10 @@ import model.api.MovieShows;
 @Setter(value = AccessLevel.PRIVATE)
 @Getter(value = AccessLevel.PRIVATE)
 public class Movie {
-
 	static final String MOVIE_PLOT_INVALID = "Movie plot must not be null or blank";
 	static final String MOVIE_NAME_INVALID = "Movie name must not be null or blank";
 	static final String DURATION_INVALID = "Movie's duration must be greater than 0";
 	static final String GENRES_INVALID = "You must add at least one genre to the movie";
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
@@ -48,7 +46,6 @@ public class Movie {
 	private int duration;
 	private LocalDate releaseDate;
 	private String plot;
-
 	@ElementCollection(targetClass = Genre.class)
 	@CollectionTable
 	@Enumerated(EnumType.STRING)
@@ -62,11 +59,9 @@ public class Movie {
 	// List does not load the entire collection for adding new elements
 	// if there is a bidirectional mapping
 	private List<UserRate> userRates;
-
 	// this is pre-calculated rating for this movie
 	@Embedded
 	private Rating rating;
-
 	@OneToMany(mappedBy = "movieToBeScreened")
 	private List<ShowTime> showTimes;
 
@@ -87,18 +82,14 @@ public class Movie {
 
 	public Movie(String name, String plot, int duration, LocalDate releaseDate,
 			Set<Genre> genres) {
-		this(name, plot, duration, releaseDate, genres, new ArrayList<Actor>(),
-				new ArrayList<Person>());
-	}
-
-	private <T> void checkCollectionSize(Set<T> collection, String errorMsg) {
-		if (collection.size() == 0) {
-			throw new BusinessException(errorMsg);
-		}
+		this(name, plot, duration, releaseDate, genres, new ArrayList<>(),
+				new ArrayList<>());
 	}
 
 	private void checkGenresAtLeastHasOne(Set<Genre> genres) {
-		checkCollectionSize(genres, GENRES_INVALID);
+		if (genres.isEmpty()) {
+			throw new BusinessException(GENRES_INVALID);
+		}
 	}
 
 	private void checkDurationGreaterThanZero(int duration) {
@@ -115,16 +106,12 @@ public class Movie {
 		return this.name.equals(aName);
 	}
 
-	public boolean isNamedAs(Movie aMovie) {
-		return this.name.equals(aMovie.name);
-	}
-
 	public boolean hasReleaseDateOf(LocalDate aDate) {
 		return releaseDate.equals(aDate);
 	}
 
 	public boolean hasGenresOf(List<Genre> genddres) {
-		return this.genres.stream().allMatch(g -> genddres.contains(g));
+		return genddres.containsAll(this.genres);
 	}
 
 	public boolean hasARole(String anActorName) {
@@ -168,7 +155,7 @@ public class Movie {
 		return new MovieShows(this.id, this.name,
 				new MovieDurationFormat(duration).toString(),
 				genreAsListOfString(), this.showTimes.stream()
-						.map(show -> show.toShowInfo()).toList());
+						.map(ShowTime::toShowInfo).toList());
 	}
 
 	public void addAnActor(String name, String surname, String email,
@@ -191,7 +178,7 @@ public class Movie {
 	}
 
 	private List<String> directorsNamesAsString() {
-		return directors.stream().map(d -> d.fullName()).toList();
+		return directors.stream().map(Person::fullName).toList();
 	}
 
 	private List<ActorInMovieName> toActorsInMovieNames() {

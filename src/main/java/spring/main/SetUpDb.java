@@ -19,7 +19,7 @@ import model.api.Genre;
 
 public class SetUpDb {
 
-	private EntityManagerFactory emf;
+	private final EntityManagerFactory emf;
 
 	public SetUpDb(EntityManagerFactory emf) {
 		this.emf = emf;
@@ -122,7 +122,7 @@ public class SetUpDb {
 				seatsA.add(i);
 			}
 
-			var ta = new Theater("Theatre A", seatsA, null);
+			var ta = new Theater("Theatre A", seatsA);
 
 			em.persist(ta);
 			em.flush();
@@ -133,7 +133,7 @@ public class SetUpDb {
 				seatsB.add(i);
 			}
 
-			var tb = new Theater("Theatre B", seatsB, null);
+			var tb = new Theater("Theatre B", seatsB);
 
 			em.persist(tb);
 			em.flush();
@@ -168,7 +168,7 @@ public class SetUpDb {
 			tx.rollback();
 			throw new RuntimeException(e);
 		} finally {
-			if (em != null && em.isOpen()) {
+			if (em.isOpen()) {
 				em.close();
 			}
 		}
