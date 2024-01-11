@@ -449,7 +449,7 @@ public class CinemaTest {
                 tests.doNothingEmailProvider(), tests.doNothingToken(), 10);
         var movieInfo = tests.createSuperMovie(cinema);
         var e = assertThrows(BusinessException.class, () -> {
-            cinema.addNewShowFor(movieInfo.id(), LocalDateTime.now(), 10f, NON_EXISTENT_ID, 10);
+            cinema.addNewShowFor(movieInfo.id(), LocalDateTime.now().plusDays(1), 10f, NON_EXISTENT_ID, 10);
             fail("ShowId should not exists in the database");
         });
         assertEquals(Cinema.THEATER_ID_DOES_NOT_EXISTS, e.getMessage());

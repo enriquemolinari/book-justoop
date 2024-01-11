@@ -1,4 +1,4 @@
-package model.token;
+package model;
 
 import dev.paseto.jpaseto.lang.Keys;
 import model.api.AuthException;

@@ -1,4 +1,4 @@
-package model.token;
+package model;
 
 import dev.paseto.jpaseto.Paseto;
 import dev.paseto.jpaseto.Pasetos;

@@ -3,7 +3,7 @@ package javalin.web;
 import io.restassured.response.Response;
 import jakarta.persistence.Persistence;
 import model.Cinema;
-import model.token.PasetoToken;
+import model.PasetoToken;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
