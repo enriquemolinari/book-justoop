@@ -168,7 +168,6 @@ public class Cinema implements CinemaSystem {
     public Ticket pay(Long userId, Long showTimeId, Set<Integer> selectedSeats,
                       String creditCardNumber, YearMonth expirationDate,
                       String secturityCode) {
-
         return inTx(em -> {
             ShowTime showTime = showTimeBy(showTimeId);
             var user = userBy(userId);
@@ -182,10 +181,8 @@ public class Cinema implements CinemaSystem {
             sendNewSaleEmailToTheUser(selectedSeats, showTime, user,
                     totalAmount);
 
-            var sale = new Sale(totalAmount, user, showTime,
+            return Sale.registerNewSaleFor(user, totalAmount, showTime,
                     showTime.pointsToEarn(), selectedSeats);
-
-            return sale.ticket();
         });
     }
 
@@ -257,7 +254,9 @@ public class Cinema implements CinemaSystem {
     }
 
     private void tryCreditCardDebit(String creditCardNumber,
-                                    YearMonth expirationDate, String secturityCode, float totalAmount) {
+                                    YearMonth expirationDate,
+                                    String secturityCode,
+                                    float totalAmount) {
         try {
             this.paymentGateway.pay(creditCardNumber, expirationDate,
                     secturityCode, totalAmount);
@@ -303,7 +302,6 @@ public class Cinema implements CinemaSystem {
         if (e == null) {
             throw new BusinessException(msg);
         }
-
         return e;
     }
 

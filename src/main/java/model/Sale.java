@@ -36,8 +36,8 @@ class Sale {
 
     private Set<Integer> selectedSeats;
 
-    public Sale(float totalAmount, User userThatPurchased, ShowTime soldShow,
-                int pointsWon, Set<Integer> selectedSeats) {
+    private Sale(float totalAmount, User userThatPurchased, ShowTime soldShow,
+                 int pointsWon, Set<Integer> selectedSeats) {
         this.total = totalAmount;
         this.purchaser = userThatPurchased;
         this.soldShow = soldShow;
@@ -45,6 +45,17 @@ class Sale {
         this.salesDate = LocalDateTime.now();
         this.pointsWon = pointsWon;
         userThatPurchased.newPurchase(this, pointsWon);
+    }
+
+    public static Ticket registerNewSaleFor(User userThatPurchased,
+                                            float totalAmount,
+                                            ShowTime soldShow,
+                                            int pointsWon,
+                                            Set<Integer> selectedSeats) {
+        return new Sale(totalAmount, userThatPurchased,
+                soldShow,
+                pointsWon,
+                selectedSeats).ticket();
     }
 
     private String formattedSalesDate() {
