@@ -66,7 +66,7 @@ class Sale {
         return this.selectedSeats.stream().toList();
     }
 
-    public Ticket ticket() {
+    private Ticket ticket() {
         return new Ticket(total, pointsWon, formattedSalesDate(),
                 purchaser.userName(), confirmedSeatNumbers(),
                 soldShow.movieName(), soldShow.startDateTime());
