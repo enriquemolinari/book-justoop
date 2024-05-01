@@ -15,7 +15,7 @@ public class Main {
         String SECRET = "nXXh3Xjr2T0ofFilg3kw8BwDEyHmS6OIe4cjWUm2Sm0=";
 
         var emf = Persistence
-                .createEntityManagerFactory("derby-cinema");
+                .createEntityManagerFactory("derby-inmemory-cinema");
 
         new SetUpDb(emf).createSchemaAndPopulateSampleData();
 

@@ -47,7 +47,7 @@ public class CinemaSystemControllerTest {
         String SECRET = "Kdj5zuBIBBgcWpv9zjKOINl2yUKUXVKO+SkOVE3VuZ4=";
 
         var emf = Persistence
-                .createEntityManagerFactory("test-derby-cinema");
+                .createEntityManagerFactory("derby-inmemory-cinema");
 
         new SetUpDb(emf).createSchemaAndPopulateSampleData();
 
