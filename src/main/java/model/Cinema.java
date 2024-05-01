@@ -168,6 +168,8 @@ public class Cinema implements CinemaSystem {
     public Ticket pay(Long userId, Long showTimeId, Set<Integer> selectedSeats,
                       String creditCardNumber, YearMonth expirationDate,
                       String secturityCode) {
+        //I might refactor this "big" method finding a new abstraction like a Cashier
+        //some of the private methods will end up moved there
         return inTx(em -> {
             ShowTime showTime = showTimeBy(showTimeId);
             var user = userBy(userId);
