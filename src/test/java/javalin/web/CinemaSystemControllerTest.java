@@ -6,6 +6,7 @@ import model.Cinema;
 import model.PasetoToken;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import spring.main.SetUpDb;
@@ -42,6 +43,8 @@ public class CinemaSystemControllerTest {
     private static final String JSON_CONTENT_TYPE = "application/json";
     private static final String URL = "http://localhost:8080";
 
+    private static CinemaSystemController cinemaSystemController;
+
     @BeforeAll
     public static void before() {
         String SECRET = "Kdj5zuBIBBgcWpv9zjKOINl2yUKUXVKO+SkOVE3VuZ4=";
@@ -59,7 +62,13 @@ public class CinemaSystemControllerTest {
                 },
                 new PasetoToken(SECRET), 2 /* page size */);
 
-        new CinemaSystemController(8080, cinema).start();
+        cinemaSystemController = new CinemaSystemController(8080, cinema);
+        cinemaSystemController.start();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        cinemaSystemController.stop();
     }
 
     @Test
