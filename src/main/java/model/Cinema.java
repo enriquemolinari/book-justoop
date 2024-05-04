@@ -17,7 +17,6 @@ public class Cinema implements CinemaSystem {
     static final String MOVIE_ID_DOES_NOT_EXISTS = "Movie ID not found";
     static final String SHOW_TIME_ID_NOT_EXISTS = "Show ID not found";
     static final String USER_ID_NOT_EXISTS = "User not registered";
-    static final String CREDIT_CARD_DEBIT_HAS_FAILED = "Credit card debit have failed";
     static final String USER_HAS_ALREADY_RATE = "The user has already rate the movie";
     static final String PAGE_NUMBER_MUST_BE_GREATER_THAN_ZERO = "page number must be greater than zero";
     private static final int DEFAULT_PAGE_SIZE = 20;
@@ -168,23 +167,16 @@ public class Cinema implements CinemaSystem {
     public Ticket pay(Long userId, Long showTimeId, Set<Integer> selectedSeats,
                       String creditCardNumber, YearMonth expirationDate,
                       String secturityCode) {
-        //I might refactor this "big" method finding a new abstraction like a Cashier
-        //some of the private methods will end up moved there
         return inTx(em -> {
             ShowTime showTime = showTimeBy(showTimeId);
             var user = userBy(userId);
-
-            var totalAmount = confirmSeatsAndGetTotalAmount(selectedSeats,
-                    showTime, user);
-
-            tryCreditCardDebit(creditCardNumber, expirationDate, secturityCode,
-                    totalAmount);
-
+            Ticket ticket = new Cachier(this.paymentGateway).paySeatsFor(selectedSeats,
+                    showTime,
+                    user,
+                    Creditcard.of(creditCardNumber, expirationDate, secturityCode));
             sendNewSaleEmailToTheUser(selectedSeats, showTime, user,
-                    totalAmount);
-
-            return Sale.registerNewSaleFor(user, totalAmount, showTime,
-                    showTime.pointsToEarn(), selectedSeats);
+                    ticket.total());
+            return ticket;
         });
     }
 
@@ -255,18 +247,6 @@ public class Cinema implements CinemaSystem {
         }
     }
 
-    private void tryCreditCardDebit(String creditCardNumber,
-                                    YearMonth expirationDate,
-                                    String secturityCode,
-                                    float totalAmount) {
-        try {
-            this.paymentGateway.pay(creditCardNumber, expirationDate,
-                    secturityCode, totalAmount);
-        } catch (Exception e) {
-            throw new BusinessException(CREDIT_CARD_DEBIT_HAS_FAILED, e);
-        }
-    }
-
     private void sendNewSaleEmailToTheUser(Set<Integer> selectedSeats,
                                            ShowTime showTime, User user, float totalAmount) {
         var emailTemplate = new NewSaleEmailTemplate(totalAmount,
@@ -277,11 +257,6 @@ public class Cinema implements CinemaSystem {
                 emailTemplate.body());
     }
 
-    private float confirmSeatsAndGetTotalAmount(Set<Integer> selectedSeats,
-                                                ShowTime showTime, User user) {
-        showTime.confirmSeatsForUser(user, selectedSeats);
-        return showTime.totalAmountForTheseSeats(selectedSeats);
-    }
 
     private Theater theatreBy(Long theatreId) {
         return findByIdOrThrows(Theater.class, theatreId, THEATER_ID_DOES_NOT_EXISTS);

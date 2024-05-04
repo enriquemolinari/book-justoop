@@ -27,6 +27,10 @@ public class ForTests {
         return new PaymenentProviderFake();
     }
 
+    PaymenentProviderThrowException fakePaymenentProviderThrowE() {
+        return new PaymenentProviderThrowException();
+    }
+
     Movie createSmallFishMovie() {
         return createSmallFishMovie(LocalDate.of(2023, 10, 10));
     }
@@ -163,5 +167,13 @@ class PaymenentProviderFake implements CreditCardPaymentProvider {
                 && this.expire.equals(expire)
                 && this.securityCode.equals(securityCode)
                 && this.totalAmount == totalAmount;
+    }
+}
+
+class PaymenentProviderThrowException implements CreditCardPaymentProvider {
+    @Override
+    public void pay(String creditCardNumber, YearMonth expire,
+                    String securityCode, float totalAmount) {
+        throw new RuntimeException("very bad...");
     }
 }
