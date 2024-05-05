@@ -28,7 +28,7 @@ public class CashierTest {
     public void payOk() {
         reserveSeatsForCarlos(seatsForCarlos);
         var paymentProvider = tests.fakePaymenentProvider();
-        var cashier = new Cachier(paymentProvider);
+        var cashier = new Cashier(paymentProvider);
         YearMonth expirationDate = getExpirationDate();
         var ticket = cashier.paySeatsFor(seatsForCarlos, aShow, carlos,
                 Creditcard.of("789456",
@@ -57,7 +57,7 @@ public class CashierTest {
     public void paymentProviderRejectingCreditCard() {
         reserveSeatsForCarlos(seatsForCarlos);
         var paymentProvider = tests.fakePaymenentProviderThrowE();
-        var cashier = new Cachier(paymentProvider);
+        var cashier = new Cashier(paymentProvider);
         YearMonth expirationDate = getExpirationDate();
         Exception e = assertThrows(BusinessException.class, () -> {
             var ticket = cashier.paySeatsFor(seatsForCarlos, aShow, carlos,
@@ -65,7 +65,7 @@ public class CashierTest {
                             expirationDate,
                             "123456"));
         });
-        assertEquals(e.getMessage(), Cachier.CREDIT_CARD_DEBIT_HAS_FAILED);
+        assertEquals(e.getMessage(), Cashier.CREDIT_CARD_DEBIT_HAS_FAILED);
         assertTrue(aShow.noneOfTheSeatsAreConfirmedBy(carlos, seatsForCarlos));
     }
 }

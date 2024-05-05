@@ -208,7 +208,7 @@ public class ShowTime {
                 this.seatsForThisShow.stream().map(ShowSeat::toSeat).toList());
     }
 
-    public List<Integer> confirmedSeatsFrom(User purchaser) {
+    List<Integer> confirmedSeatsFrom(User purchaser) {
         return this.seatsForThisShow.stream()
                 .filter(seat -> seat.isConfirmedBy(purchaser))
                 .map(ShowSeat::seatNumber).toList();

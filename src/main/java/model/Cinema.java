@@ -170,7 +170,7 @@ public class Cinema implements CinemaSystem {
         return inTx(em -> {
             ShowTime showTime = showTimeBy(showTimeId);
             var user = userBy(userId);
-            Ticket ticket = new Cachier(this.paymentGateway).paySeatsFor(selectedSeats,
+            Ticket ticket = new Cashier(this.paymentGateway).paySeatsFor(selectedSeats,
                     showTime,
                     user,
                     Creditcard.of(creditCardNumber, expirationDate, secturityCode));

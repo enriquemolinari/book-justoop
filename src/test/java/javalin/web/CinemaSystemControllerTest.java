@@ -1,6 +1,7 @@
 package javalin.web;
 
 import io.restassured.response.Response;
+import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import model.Cinema;
 import model.PasetoToken;
@@ -44,12 +45,13 @@ public class CinemaSystemControllerTest {
     private static final String URL = "http://localhost:8080";
 
     private static CinemaSystemController cinemaSystemController;
+    private static EntityManagerFactory emf;
 
     @BeforeAll
     public static void before() {
         String SECRET = "Kdj5zuBIBBgcWpv9zjKOINl2yUKUXVKO+SkOVE3VuZ4=";
 
-        var emf = Persistence
+        emf = Persistence
                 .createEntityManagerFactory("derby-inmemory-cinema");
 
         new SetUpDb(emf).createSchemaAndPopulateSampleData();
@@ -68,6 +70,7 @@ public class CinemaSystemControllerTest {
 
     @AfterAll
     public static void afterAll() {
+        emf.close();
         cinemaSystemController.stop();
     }
 

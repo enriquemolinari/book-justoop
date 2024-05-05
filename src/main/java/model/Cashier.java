@@ -6,11 +6,11 @@ import model.api.Ticket;
 
 import java.util.Set;
 
-public class Cachier {
+public class Cashier {
     private final CreditCardPaymentProvider paymentGateway;
     static final String CREDIT_CARD_DEBIT_HAS_FAILED = "Credit card debit have failed";
 
-    public Cachier(CreditCardPaymentProvider paymentGateway) {
+    public Cashier(CreditCardPaymentProvider paymentGateway) {
         this.paymentGateway = paymentGateway;
     }
 
