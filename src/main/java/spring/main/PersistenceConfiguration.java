@@ -18,7 +18,7 @@ public class PersistenceConfiguration {
     @Profile("default")
     public LocalEntityManagerFactoryBean createEntityManagerFactory() {
         LocalEntityManagerFactoryBean factory = new LocalEntityManagerFactoryBean();
-        factory.setPersistenceUnitName(DERBY_EMBEDDED_PERSISTENCE_UNIT);
+        factory.setPersistenceUnitName(DERBY_CLIENT_PERSISTENCE_UNIT);
         return factory;
     }
 }

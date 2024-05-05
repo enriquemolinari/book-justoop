@@ -30,8 +30,7 @@ public class Cashier {
         // It's imperative to ensure that the user is refunded promptly.
         // To handle this gracefully we should set up a compensation mechanism
         // not covered in this book
-        showTime.confirmSeatsForUser(user, selectedSeats);
-        return Sale.registerNewSaleFor(user, total, showTime,
-                showTime.pointsToEarn(), selectedSeats);
+        var showSeats = showTime.confirmSeatsForUser(user, selectedSeats);
+        return Sale.registerNewSaleFor(user, total, showTime.pointsToEarn(), showSeats);
     }
 }

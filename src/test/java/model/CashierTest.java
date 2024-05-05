@@ -35,6 +35,7 @@ public class CashierTest {
                         expirationDate,
                         "123456"));
         assertEquals(20f, ticket.total());
+        assertEquals("Small Fish", ticket.getMovieName());
         assertEquals(10, ticket.getPointsWon());
         assertTrue(ticket.hasSeats(seatsForCarlos));
         assertTrue(paymentProvider.hasBeanCalledWith("789456",

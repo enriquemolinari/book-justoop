@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import model.api.BusinessException;
 import model.api.Ticket;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ import java.util.Set;
 @Getter(value = AccessLevel.PRIVATE)
 class Sale {
 
+    public static final String SALE_CANNOT_BE_CREATED_WITHOUT_SEATS = "Sale cannot be created without seats";
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
@@ -30,18 +32,17 @@ class Sale {
 
     private int pointsWon;
 
-    @ManyToOne
-    @JoinColumn(name = "id_showtime")
-    private ShowTime soldShow;
+    @OneToMany
+    @JoinColumn(name = "id_sale")
+    private Set<ShowSeat> seatsSold;
 
-    private Set<Integer> selectedSeats;
-
-    private Sale(float totalAmount, User userThatPurchased, ShowTime soldShow,
-                 int pointsWon, Set<Integer> selectedSeats) {
+    private Sale(float totalAmount,
+                 User userThatPurchased,
+                 Set<ShowSeat> seatsSold,
+                 int pointsWon) {
         this.total = totalAmount;
         this.purchaser = userThatPurchased;
-        this.soldShow = soldShow;
-        this.selectedSeats = selectedSeats;
+        this.seatsSold = seatsSold;
         this.salesDate = LocalDateTime.now();
         this.pointsWon = pointsWon;
         userThatPurchased.newPurchase(this, pointsWon);
@@ -49,13 +50,17 @@ class Sale {
 
     public static Ticket registerNewSaleFor(User userThatPurchased,
                                             float totalAmount,
-                                            ShowTime soldShow,
                                             int pointsWon,
-                                            Set<Integer> selectedSeats) {
-        return new Sale(totalAmount, userThatPurchased,
-                soldShow,
-                pointsWon,
-                selectedSeats).ticket();
+                                            Set<ShowSeat> seatsSold) {
+        checkSeatsNotEmpty(seatsSold);
+        return new Sale(totalAmount, userThatPurchased, seatsSold,
+                pointsWon).ticket();
+    }
+
+    private static void checkSeatsNotEmpty(Set<ShowSeat> seatsSold) {
+        if (seatsSold.isEmpty()) {
+            throw new BusinessException(SALE_CANNOT_BE_CREATED_WITHOUT_SEATS);
+        }
     }
 
     private String formattedSalesDate() {
@@ -63,12 +68,15 @@ class Sale {
     }
 
     List<Integer> confirmedSeatNumbers() {
-        return this.selectedSeats.stream().toList();
+        return this.seatsSold.stream().map(seat -> seat.seatNumber()).toList();
     }
 
     private Ticket ticket() {
+        ShowSeat first = this.seatsSold.stream().findFirst().get();
+        String movieName = first.showMovieName();
+        String startTime = first.showStartTime();
         return new Ticket(total, pointsWon, formattedSalesDate(),
                 purchaser.userName(), confirmedSeatNumbers(),
-                soldShow.movieName(), soldShow.startDateTime());
+                movieName, startTime);
     }
 }

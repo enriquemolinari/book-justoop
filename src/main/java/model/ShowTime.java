@@ -105,10 +105,11 @@ public class ShowTime {
         return Math.round(selectedSeats.size() * this.price * 100.0f) / 100.0f;
     }
 
-    void confirmSeatsForUser(User user, Set<Integer> selectedSeats) {
+    Set<ShowSeat> confirmSeatsForUser(User user, Set<Integer> selectedSeats) {
         var selection = filterSelectedSeats(selectedSeats);
         checkAllSelectedSeatsAreReservedBy(user, selection);
         confirmAllSeatsFor(user, selection);
+        return selection;
     }
 
     private void checkPriceIsPositiveAndNotFree(float price) {
