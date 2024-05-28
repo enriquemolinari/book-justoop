@@ -1,7 +1,6 @@
 package model;
 
 import model.api.BusinessException;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +47,6 @@ public class CashierTest {
         aShow.reserveSeatsFor(carlos, seatsForCarlos, LocalDateTime.now().plusMinutes(15));
     }
 
-    @NotNull
     private static YearMonth getExpirationDate() {
         return YearMonth.of(LocalDateTime.now().plusMonths(1).getYear(),
                 LocalDateTime.now().plusMonths(1).getMonth().getValue());
