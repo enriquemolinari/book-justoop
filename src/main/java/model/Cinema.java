@@ -142,10 +142,8 @@ public class Cinema implements CinemaSystem {
         return inTx(em -> {
             var movie = movieBy(movieId);
             var theatre = theatreBy(theaterId);
-
             var showTime = new ShowTime(movie, startTime, price, theatre,
                     pointsToWin);
-            //TODO: agregar showTime a Movie y correr tests...
             em.persist(showTime);
             return showTime.toShowInfo();
         });
