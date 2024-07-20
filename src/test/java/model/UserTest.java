@@ -65,7 +65,7 @@ public class UserTest {
                             "enrique.molinari@gmail.com"),
                     "emolinari", "Ab138RtoUjkL", "Ab13RtoUjkL");
         });
-        assertEquals(User.PASSWORDS_MUST_BE_EQUALS, e.getMessage());
+        assertEquals(Password.PASSWORDS_MUST_BE_EQUALS, e.getMessage());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class UserTest {
         Exception e = assertThrows(BusinessException.class, () -> {
             u.changePassword("abchd1239876", "Abcdefghijkl", "Abcdefghijkl");
         });
-        assertEquals(User.CAN_NOT_CHANGE_PASSWORD, e.getMessage());
+        assertEquals(Password.CAN_NOT_CHANGE_PASSWORD, e.getMessage());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class UserTest {
         Exception e = assertThrows(BusinessException.class, () -> {
             u.changePassword("Ab138RtoUjkL", "Abcdefghrjkl", "Abcdefghijkl");
         });
-        assertEquals(User.PASSWORDS_MUST_BE_EQUALS, e.getMessage());
+        assertEquals(Password.PASSWORDS_MUST_BE_EQUALS, e.getMessage());
     }
 
     @Test

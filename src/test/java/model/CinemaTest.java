@@ -406,7 +406,7 @@ public class CinemaTest {
             cinema.changePassword(userId, JOSEUSER_PASS, "123412341234",
                     "123412341294");
         });
-        assertEquals(User.PASSWORDS_MUST_BE_EQUALS, e.getMessage());
+        assertEquals(Password.PASSWORDS_MUST_BE_EQUALS, e.getMessage());
     }
 
     @Test
