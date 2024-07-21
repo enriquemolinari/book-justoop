@@ -171,7 +171,7 @@ public class Cinema implements CinemaSystem {
             Ticket ticket = new Cashier(this.paymentGateway).paySeatsFor(selectedSeats,
                     showTime,
                     user,
-                    Creditcard.of(creditCardNumber, expirationDate, secturityCode));
+                    CreditCard.of(creditCardNumber, expirationDate, secturityCode));
             sendNewSaleEmailToTheUser(selectedSeats, showTime, user,
                     ticket.total());
             return ticket;

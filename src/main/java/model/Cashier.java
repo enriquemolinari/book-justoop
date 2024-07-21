@@ -17,7 +17,7 @@ public class Cashier {
     public Ticket paySeatsFor(Set<Integer> selectedSeats,
                               ShowTime showTime,
                               User user,
-                              Creditcard creditCard) {
+                              CreditCard creditCard) {
         var total = showTime.totalAmountForTheseSeats(selectedSeats);
         try {
             // In this scenario, we have a service operation executed outside a Tx boundary.

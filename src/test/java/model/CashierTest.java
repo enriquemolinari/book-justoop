@@ -30,7 +30,7 @@ public class CashierTest {
         var cashier = new Cashier(paymentProvider);
         YearMonth expirationDate = getExpirationDate();
         var ticket = cashier.paySeatsFor(seatsForCarlos, aShow, carlos,
-                Creditcard.of("789456",
+                CreditCard.of("789456",
                         expirationDate,
                         "123456"));
         assertEquals(20f, ticket.total());
@@ -60,7 +60,7 @@ public class CashierTest {
         YearMonth expirationDate = getExpirationDate();
         Exception e = assertThrows(BusinessException.class, () -> {
             var ticket = cashier.paySeatsFor(seatsForCarlos, aShow, carlos,
-                    Creditcard.of("789456",
+                    CreditCard.of("789456",
                             expirationDate,
                             "123456"));
         });

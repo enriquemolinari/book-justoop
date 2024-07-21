@@ -49,6 +49,6 @@ class Password {
     }
 
     boolean hasPassword(String password) {
-        return this.password.equals(password);
+        return this.equals(new Password(password));
     }
 }
