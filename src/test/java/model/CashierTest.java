@@ -43,6 +43,18 @@ public class CashierTest {
                 20f));
     }
 
+    @Test
+    public void payWithoutSeatsCannotBeCompleted() {
+        Exception e = assertThrows(BusinessException.class, () -> {
+            var ticket = new Cashier(tests.fakePaymenentProvider())
+                    .paySeatsFor(Set.of(), aShow, carlos,
+                            CreditCard.of("789456",
+                                    getExpirationDate(),
+                                    "123456"));
+        });
+        assertEquals(e.getMessage(), Cashier.SELECTED_SEATS_SHOULD_NOT_BE_EMPTY);
+    }
+
     private void reserveSeatsForCarlos(Set<Integer> seatsForCarlos) {
         aShow.reserveSeatsFor(carlos, seatsForCarlos, LocalDateTime.now().plusMinutes(15));
     }

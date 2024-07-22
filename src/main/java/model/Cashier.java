@@ -7,6 +7,7 @@ import model.api.Ticket;
 import java.util.Set;
 
 public class Cashier {
+    static final String SELECTED_SEATS_SHOULD_NOT_BE_EMPTY = "Selected Seats should not be empty";
     private final CreditCardPaymentProvider paymentGateway;
     static final String CREDIT_CARD_DEBIT_HAS_FAILED = "Credit card debit have failed";
 
@@ -18,6 +19,7 @@ public class Cashier {
                               ShowTime showTime,
                               User user,
                               CreditCard creditCard) {
+        checkSelectedSeats(selectedSeats);
         var total = showTime.totalAmountForTheseSeats(selectedSeats);
         try {
             // In this scenario, we have a service operation executed outside a Tx boundary.
@@ -32,5 +34,11 @@ public class Cashier {
         // not covered in this book
         var showSeats = showTime.confirmSeatsForUser(user, selectedSeats);
         return Sale.registerNewSaleFor(user, total, showTime.pointsToEarn(), showSeats);
+    }
+
+    private void checkSelectedSeats(Set<Integer> selectedSeats) {
+        if (selectedSeats.isEmpty()) {
+            throw new BusinessException(SELECTED_SEATS_SHOULD_NOT_BE_EMPTY);
+        }
     }
 }
