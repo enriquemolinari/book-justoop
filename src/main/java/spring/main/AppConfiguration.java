@@ -1,11 +1,11 @@
 package spring.main;
 
+import app.Cinema;
+import app.PasetoToken;
+import app.PleasePayPaymentProvider;
+import app.TheBestEmailProvider;
+import app.api.CinemaSystem;
 import jakarta.persistence.EntityManagerFactory;
-import model.Cinema;
-import model.PasetoToken;
-import model.PleasePayPaymentProvider;
-import model.TheBestEmailProvider;
-import model.api.CinemaSystem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +21,7 @@ public class AppConfiguration {
 
     @Bean
     @Profile("default")
-    public CinemaSystem create() {
+    public CinemaSystem createCinemaSystem() {
         new SetUpDb(entityManagerFactory)
                 .createSchemaAndPopulateSampleData();
         return new Cinema(entityManagerFactory, new PleasePayPaymentProvider(),

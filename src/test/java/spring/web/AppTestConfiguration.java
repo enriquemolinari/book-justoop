@@ -1,14 +1,13 @@
 package spring.web;
 
+import app.Cinema;
+import app.PasetoToken;
+import app.api.CinemaSystem;
 import jakarta.persistence.EntityManagerFactory;
-import model.Cinema;
-import model.PasetoToken;
-import model.api.CinemaSystem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import spring.main.SetUpDb;
 
 import java.time.YearMonth;
 
@@ -22,8 +21,7 @@ public class AppTestConfiguration {
     @Bean
     public CinemaSystem createForTest() {
         String ANY_SECRET = "Kdj5zuBIBBgcWpv9zjKOINl2yUKUXVKO+SkOVE3VuZ4=";
-        new SetUpDb(entityManagerFactory)
-                .createSchemaAndPopulateSampleData();
+
         return new Cinema(entityManagerFactory,
                 (String creditCardNumber, YearMonth expire, String securityCode,
                  float totalAmount) -> {
@@ -35,5 +33,4 @@ public class AppTestConfiguration {
          * page size
          */);
     }
-
 }

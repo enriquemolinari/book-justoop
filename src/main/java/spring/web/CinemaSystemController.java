@@ -1,6 +1,6 @@
 package spring.web;
 
-import model.api.*;
+import app.api.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;

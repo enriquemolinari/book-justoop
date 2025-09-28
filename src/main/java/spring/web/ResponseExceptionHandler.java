@@ -9,30 +9,30 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import model.api.AuthException;
+import app.api.AuthException;
 
 @ControllerAdvice
 public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
 
-	private static final String MESSAGE_KEY = "message";
+    private static final String MESSAGE_KEY = "message";
 
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<Object> handleAllMyException(
-			Exception ex,
-			WebRequest request) {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleAllMyException(
+            Exception ex,
+            WebRequest request) {
 
-		return new ResponseEntity<Object>(Map.of(MESSAGE_KEY,
-				ex.getMessage()),
-				HttpStatus.INTERNAL_SERVER_ERROR);
-	}
+        return new ResponseEntity<Object>(Map.of(MESSAGE_KEY,
+                ex.getMessage()),
+                HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
-	@ExceptionHandler(AuthException.class)
-	public ResponseEntity<Object> handleAllBusinessExceptions(
-			Exception ex,
-			WebRequest request) {
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<Object> handleAllBusinessExceptions(
+            Exception ex,
+            WebRequest request) {
 
-		return new ResponseEntity<Object>(Map.of(MESSAGE_KEY,
-				ex.getMessage()),
-				HttpStatus.UNAUTHORIZED);
-	}
+        return new ResponseEntity<Object>(Map.of(MESSAGE_KEY,
+                ex.getMessage()),
+                HttpStatus.UNAUTHORIZED);
+    }
 }

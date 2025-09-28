@@ -9,27 +9,27 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 public class VerifyArchitectureTest {
 
     @Test
-    public void modelShouldOnlyDependOnModelApi() {
+    public void appShouldOnlyDependOnAppApi() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
                         new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
-                .importPackages("model..", "spring..", "main");
-        classes().that().resideInAPackage("model").should()
+                .importPackages("app..", "spring..", "main");
+        classes().that().resideInAPackage("app").should()
                 .onlyDependOnClassesThat()
-                .resideInAnyPackage("model.api", "model", "java..", "javax..",
+                .resideInAnyPackage("app.api", "app", "java..", "javax..",
                         "lombok..",
                         "jakarta..",
                         "dev.paseto..")
                 .check(importedClasses);
     }
-	
+
     @Test
-    public void webPackagesOutSideModelShouldOnlyDependOnModelApi() {
+    public void webPackagesOutSideAppShouldOnlyDependOnAppApi() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
                         new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
-                .importPackages("model..", "spring..", "main");
+                .importPackages("app..", "spring..", "main");
         classes().that().resideInAPackage("spring.web").should()
                 .onlyDependOnClassesThat()
-                .resideInAnyPackage("model.api", "spring.web", "java..",
+                .resideInAnyPackage("app.api", "spring.web", "java..",
                         "javax..",
                         "org.springframework..")
                 .check(importedClasses);
