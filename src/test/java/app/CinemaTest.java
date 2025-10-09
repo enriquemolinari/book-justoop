@@ -43,7 +43,6 @@ public class CinemaTest {
     @AfterEach
     public void tearDown() {
         emf.getSchemaManager().truncate();
-        //emf.close();
     }
 
     @Test

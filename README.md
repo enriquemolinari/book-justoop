@@ -1,4 +1,4 @@
-# Cinema Ticket System - Rich Domain Model Code Organization
+# Cinema Ticket System - Layered: Rich Domain Model Code Organization
 
 This repository contains the implementation of the Cinema Ticket System using a layered architecture with a rich domain
 model approach for organizing business logic.
