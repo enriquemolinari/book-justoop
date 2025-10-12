@@ -79,4 +79,47 @@ public class CashierTest {
         assertEquals(e.getMessage(), Cashier.CREDIT_CARD_DEBIT_HAS_FAILED);
         assertTrue(aShow.noneOfTheSeatsAreConfirmedBy(carlos, seatsForCarlos));
     }
+
+    @Test
+    public void paymentSucceedsButConfirmSeatsAndRegisterSaleFails() {
+        reserveSeatsForCarlos(seatsForCarlos);
+        var paymentProvider = tests.fakePaymenentProvider();
+        var cashier = new Cashier(paymentProvider);
+        YearMonth expirationDate = getExpirationDate();
+
+        // A ShowTime wrapper that delegates to aShow but fails on confirmSeatsForUser
+        ShowTime showTimeThatFailsOnConfirm = new ShowTime() {
+            @Override
+            void checkAllSeatsAreReservedBy(User user, Set<Integer> selectedSeats) {
+                aShow.checkAllSeatsAreReservedBy(user, selectedSeats);
+            }
+
+            @Override
+            float totalAmountForTheseSeats(Set<Integer> selectedSeats) {
+                return aShow.totalAmountForTheseSeats(selectedSeats);
+            }
+
+            @Override
+            Set<ShowSeat> confirmSeatsForUser(User user, Set<Integer> selectedSeats) {
+                throw new RuntimeException("Any fake exception to simulate failure");
+            }
+
+            @Override
+            int pointsToEarn() {
+                return aShow.pointsToEarn();
+            }
+        };
+
+        Exception e = assertThrows(BusinessException.class, () ->
+                cashier.paySeatsFor(seatsForCarlos, showTimeThatFailsOnConfirm, carlos,
+                        CreditCard.of("789456", expirationDate, "123456"))
+        );
+
+        assertEquals(Cashier.CANNOT_COMPLETE_THE_SALE, e.getMessage());
+        assertTrue(paymentProvider.hasBeanCalledWith("789456",
+                expirationDate,
+                "123456",
+                20f));
+        assertTrue(aShow.noneOfTheSeatsAreConfirmedBy(carlos, seatsForCarlos));
+    }
 }

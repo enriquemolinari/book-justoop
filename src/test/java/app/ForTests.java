@@ -71,9 +71,11 @@ public class ForTests {
     }
 
     ShowTime createShowForSmallFish() {
-        return new ShowTime(DateTimeProvider.create(), createSmallFishMovie(),
-                LocalDateTime.now().plusDays(1), 10f,
-                new Theater("a Theater", Set.of(1, 2, 3, 4, 5, 6)));
+        return ShowTime.scheduleFor(createSmallFishMovie())
+                .at(LocalDateTime.now().plusDays(1))
+                .pricedAt(10f)
+                .in(new Theater("a Theater", Set.of(1, 2, 3, 4, 5, 6)))
+                .build();
     }
 
     User createUserCharly() {

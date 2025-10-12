@@ -1,14 +1,13 @@
 package app;
 
+import app.api.BusinessException;
+import app.api.DetailedShowInfo;
+import app.api.ShowInfo;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import app.api.BusinessException;
-import app.api.DateTimeProvider;
-import app.api.DetailedShowInfo;
-import app.api.ShowInfo;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,18 +25,17 @@ public class ShowTime {
     static final String PRICE_MUST_BE_POSITIVE = "The price must be greater than zero";
     static final String SELECTED_SEATS_ARE_BUSY = "All or some of the seats chosen are busy";
     static final String RESERVATION_IS_REQUIRED_TO_CONFIRM = "Reservation is required before confirm";
-    private static final int DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE = 10;
+    static final int DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE = 10;
     static final String SHOW_START_TIME_MUST_BE_AFTER_MOVIE_RELEASE_DATE = "Show start time must be before movie release date";
+    public static final String MOVIE_IS_REQUIRED = "Movie is required";
+    public static final String START_TIME_IS_REQUIRED = "Start time is required";
+    public static final String PRICE_IS_REQUIRED = "Price is required";
+    public static final String THEATER_IS_REQUIRED = "Theater is required";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
     private LocalDateTime startTime;
-
-    @Transient
-    // When hibernate creates an instance of this class, this will be
-    // null if I don't initialize it here.
-    private DateTimeProvider timeProvider = DateTimeProvider.create();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_movie")
@@ -49,33 +47,6 @@ public class ShowTime {
     private Set<ShowSeat> seatsForThisShow;
     @Column(name = "pointsToWin")
     private int pointsThatAUserWin;
-
-    public ShowTime(DateTimeProvider provider, Movie movie,
-                    LocalDateTime startTime, float price, Theater screenedIn) {
-        this(provider, movie, startTime, price, screenedIn,
-                DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE);
-    }
-
-    public ShowTime(Movie movie, LocalDateTime startTime, float price,
-                    Theater screenedIn, int totalPointsToWin) {
-        this(DateTimeProvider.create(), movie, startTime, price, screenedIn,
-                totalPointsToWin);
-    }
-
-    public ShowTime(DateTimeProvider provider, Movie movie,
-                    LocalDateTime startTime, float price, Theater screenedIn,
-                    int totalPointsToWin) {
-        this.timeProvider = provider;
-        this.movieToBeScreened = movie;
-        checkStartTimeIsInTheFuture(startTime);
-        checkPriceIsPositiveAndNotFree(price);
-        checkShowStartDateIsGreateThanReleaseDate(startTime, movie);
-        this.price = price;
-        this.startTime = startTime;
-        this.screenedIn = screenedIn;
-        this.seatsForThisShow = screenedIn.seatsForShow(this);
-        this.pointsThatAUserWin = totalPointsToWin;
-    }
 
     private void checkShowStartDateIsGreateThanReleaseDate(
             LocalDateTime startTime, Movie movie) {
@@ -119,7 +90,7 @@ public class ShowTime {
     }
 
     private void checkStartTimeIsInTheFuture(LocalDateTime startTime) {
-        if (startTime.isBefore(this.timeProvider.now())) {
+        if (startTime.isBefore(LocalDateTime.now())) {
             throw new BusinessException(START_TIME_MUST_BE_IN_THE_FUTURE);
         }
     }
@@ -144,6 +115,7 @@ public class ShowTime {
         return allMatchConditionFor(selectedSeats,
                 seat -> seat.isConfirmedBy(aUser));
     }
+
 
     boolean areAllSeatsReservedBy(User aUser, Set<Integer> seatsToReserve) {
         var selectedSeats = filterSelectedSeats(seatsToReserve);
@@ -172,15 +144,7 @@ public class ShowTime {
     }
 
     private void checkAllSelectedSeatsAreAvailable(Set<ShowSeat> selection) {
-        checkAtLeastOneMatchConditionFor(selection, ShowSeat::isBusy,
-                SELECTED_SEATS_ARE_BUSY);
-    }
-
-    private void checkAllSelectedSeatsAreReservedBy(User user,
-                                                    Set<ShowSeat> selection) {
-        checkAtLeastOneMatchConditionFor(selection,
-                seat -> !seat.isReservedBy(user),
-                RESERVATION_IS_REQUIRED_TO_CONFIRM);
+        checkAtLeastOneMatchConditionFor(selection, ShowSeat::isBusy, SELECTED_SEATS_ARE_BUSY);
     }
 
     String movieName() {
@@ -213,5 +177,80 @@ public class ShowTime {
         return this.seatsForThisShow.stream()
                 .filter(seat -> seat.isConfirmedBy(purchaser))
                 .map(ShowSeat::seatNumber).toList();
+    }
+
+    public static Builder scheduleFor(Movie aMovie) {
+        return new Builder(aMovie);
+    }
+
+    void checkAllSeatsAreReservedBy(User user, Set<Integer> selectedSeats) {
+        var seats = filterSelectedSeats(selectedSeats);
+        checkAllSelectedSeatsAreReservedBy(user, seats);
+    }
+
+    private void checkAllSelectedSeatsAreReservedBy(User user, Set<ShowSeat> selection) {
+        checkAtLeastOneMatchConditionFor(selection,
+                seat -> !seat.isReservedBy(user),
+                RESERVATION_IS_REQUIRED_TO_CONFIRM);
+    }
+
+    public static class Builder {
+        private int pointsToWin = ShowTime.DEFAULT_TOTAL_POINTS_FOR_A_PURCHASE;
+        private Movie movie;
+        private LocalDateTime startTime;
+        private Float price;
+        private Theater theater;
+
+        private Builder(Movie aMovie) {
+            this.movie = aMovie;
+        }
+
+        public Builder at(LocalDateTime startTime) {
+            this.startTime = startTime;
+            return this;
+        }
+
+        public Builder pricedAt(float price) {
+            this.price = price;
+            return this;
+        }
+
+        public Builder in(Theater theater) {
+            this.theater = theater;
+            return this;
+        }
+
+        public Builder rewarding(int points) {
+            this.pointsToWin = points;
+            return this;
+        }
+
+        public ShowTime build() {
+            if (movie == null) {
+                throw new BusinessException(MOVIE_IS_REQUIRED);
+            }
+            if (startTime == null) {
+                throw new BusinessException(START_TIME_IS_REQUIRED);
+            }
+            if (price == null) {
+                throw new BusinessException(PRICE_IS_REQUIRED);
+            }
+            if (theater == null) {
+                throw new BusinessException(THEATER_IS_REQUIRED);
+            }
+            return new ShowTime(this);
+        }
+    }
+
+    private ShowTime(Builder builder) {
+        movieToBeScreened = builder.movie;
+        price = builder.price;
+        startTime = builder.startTime;
+        screenedIn = builder.theater;
+        seatsForThisShow = builder.theater.seatsForShow(this);
+        pointsThatAUserWin = builder.pointsToWin;
+        checkPriceIsPositiveAndNotFree(price);
+        checkStartTimeIsInTheFuture(startTime);
+        checkShowStartDateIsGreateThanReleaseDate(startTime, movieToBeScreened);
     }
 }

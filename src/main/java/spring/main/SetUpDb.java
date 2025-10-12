@@ -1,21 +1,15 @@
 package spring.main;
 
+import app.*;
+import app.api.Genre;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import app.Actor;
-import app.Movie;
-import app.Person;
-import app.ShowTime;
-import app.Theater;
-import app.User;
-import app.api.DateTimeProvider;
-import app.api.Genre;
 
 public class SetUpDb {
 
@@ -138,29 +132,47 @@ public class SetUpDb {
             em.persist(tb);
             em.flush();
 
-            var show1 = new ShowTime(DateTimeProvider.create(), fishMovie,
-                    LocalDateTime.now().plusDays(1), 10f, ta);
+            var show1 = ShowTime.scheduleFor(fishMovie)
+                    .at(LocalDateTime.now().plusDays(1))
+                    .pricedAt(10f)
+                    .in(ta)
+                    .build();
             em.persist(show1);
 
-            var show2 = new ShowTime(DateTimeProvider.create(), fishMovie,
-                    LocalDateTime.now().plusDays(1).plusHours(4), 10f, ta);
+            var show2 = ShowTime.scheduleFor(fishMovie)
+                    .at(LocalDateTime.now().plusDays(1).plusHours(4))
+                    .pricedAt(10f)
+                    .in(ta)
+                    .build();
             em.persist(show2);
 
-            var show3 = new ShowTime(DateTimeProvider.create(), schoolMovie,
-                    LocalDateTime.now().plusDays(2).plusHours(1), 19f, tb);
+            var show3 = ShowTime.scheduleFor(schoolMovie)
+                    .at(LocalDateTime.now().plusDays(2).plusHours(1))
+                    .pricedAt(19f)
+                    .in(tb)
+                    .build();
 
             em.persist(show3);
 
-            var show4 = new ShowTime(DateTimeProvider.create(), schoolMovie,
-                    LocalDateTime.now().plusDays(2).plusHours(5), 19f, tb);
+            var show4 = ShowTime.scheduleFor(schoolMovie)
+                    .at(LocalDateTime.now().plusDays(2).plusHours(5))
+                    .pricedAt(19f)
+                    .in(tb)
+                    .build();
             em.persist(show4);
 
-            var show5 = new ShowTime(DateTimeProvider.create(), teaMovie,
-                    LocalDateTime.now().plusDays(2).plusHours(2), 19f, ta);
+            var show5 = ShowTime.scheduleFor(teaMovie)
+                    .at(LocalDateTime.now().plusDays(2).plusHours(2))
+                    .pricedAt(19f)
+                    .in(ta)
+                    .build();
             em.persist(show5);
 
-            var show6 = new ShowTime(DateTimeProvider.create(), runningMovie,
-                    LocalDateTime.now().plusHours(2), 19f, tb);
+            var show6 = ShowTime.scheduleFor(runningMovie)
+                    .at(LocalDateTime.now().plusHours(2))
+                    .pricedAt(19f)
+                    .in(tb)
+                    .build();
             em.persist(show6);
 
             tx.commit();

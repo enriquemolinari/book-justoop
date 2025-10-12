@@ -143,8 +143,14 @@ public class Cinema implements CinemaSystem {
         return emf.callInTransaction(em -> {
             var movie = movieBy(em, movieId);
             var theatre = theatreBy(em, theaterId);
-            var showTime = new ShowTime(movie, startTime, price, theatre,
-                    pointsToWin);
+//            var showTime = new ShowTime(movie, startTime, price, theatre,
+//                    pointsToWin);
+            var showTime = ShowTime.scheduleFor(movie)
+                    .in(theatre)
+                    .pricedAt(price)
+                    .at(startTime)
+                    .rewarding(pointsToWin)
+                    .build();
             em.persist(showTime);
             return showTime.toShowInfo();
         });

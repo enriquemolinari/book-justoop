@@ -1,18 +1,13 @@
 package app;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import app.api.BusinessException;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-import org.junit.jupiter.api.Test;
-
-import app.api.BusinessException;
-import app.api.DateTimeProvider;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ShowTimeTest {
 
@@ -21,10 +16,11 @@ public class ShowTimeTest {
     @Test
     public void showTimeStartTimeMustBeInTheFuture() {
         Exception e = assertThrows(BusinessException.class, () -> {
-            new ShowTime(DateTimeProvider.create(),
-                    tests.createSmallFishMovie(),
-                    LocalDateTime.of(2023, 3, 10, 15, 0, 0, 0), 10f,
-                    new Theater("A Theater", Set.of(1)));
+            ShowTime.scheduleFor(tests.createSmallFishMovie())
+                    .at(LocalDateTime.of(2023, 3, 10, 15, 0, 0, 0))
+                    .pricedAt(10f)
+                    .in(new Theater("A Theater", Set.of(1)))
+                    .build();
         });
 
         assertEquals(e.getMessage(), ShowTime.START_TIME_MUST_BE_IN_THE_FUTURE);
@@ -33,10 +29,11 @@ public class ShowTimeTest {
     @Test
     public void showTimeStartTimeMustBeAfterMovieReleaseDate() {
         Exception e = assertThrows(BusinessException.class, () -> {
-            new ShowTime(DateTimeProvider.create(),
-                    tests.createSmallFishMovie(LocalDate.now().plusDays(20)),
-                    LocalDateTime.now().plusMinutes(10), 10f,
-                    new Theater("A Theater", Set.of(1)));
+            ShowTime.scheduleFor(tests.createSmallFishMovie(LocalDate.now().plusDays(20)))
+                    .at(LocalDateTime.now().plusMinutes(10))
+                    .pricedAt(10f)
+                    .in(new Theater("A Theater", Set.of(1)))
+                    .build();
         });
 
         assertEquals(e.getMessage(),
@@ -46,10 +43,11 @@ public class ShowTimeTest {
     @Test
     public void showTimePriceMustNotBeFree() {
         Exception e = assertThrows(BusinessException.class, () -> {
-            new ShowTime(DateTimeProvider.create(),
-                    tests.createSmallFishMovie(),
-                    LocalDateTime.now().plusDays(1), 0f, new Theater(
-                    "A Theater", Set.of(1)));
+            ShowTime.scheduleFor(tests.createSmallFishMovie())
+                    .at(LocalDateTime.now().plusDays(1))
+                    .pricedAt(0f)
+                    .in(new Theater("A Theater", Set.of(1)))
+                    .build();
         });
 
         assertEquals(e.getMessage(), ShowTime.PRICE_MUST_BE_POSITIVE);
