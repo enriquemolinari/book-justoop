@@ -1,34 +1,18 @@
 package app;
 
+import app.api.*;
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import app.api.ActorInMovieName;
-import app.api.BusinessException;
-import app.api.Genre;
-import app.api.MovieInfo;
-import app.api.MovieShows;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -151,11 +135,11 @@ public class Movie {
         return this.name;
     }
 
-    public MovieShows toMovieShow() {
+    public MovieShows asMovieShow() {
         return new MovieShows(this.id, this.name,
                 new MovieDurationFormat(duration).toString(),
                 genreAsListOfString(), this.showTimes.stream()
-                .map(ShowTime::toShowInfo).toList());
+                .map(ShowTime::asInfo).toList());
     }
 
     public void addAnActor(String name, String surname, String email,
@@ -168,22 +152,22 @@ public class Movie {
         this.directors.add(new Person(name, surname, email));
     }
 
-    public MovieInfo toInfo() {
+    public MovieInfo asInfo() {
         return new MovieInfo(id, name,
                 new MovieDurationFormat(duration).toString(), plot,
                 genreAsListOfString(), directorsNamesAsString(),
                 new FormattedDate(releaseDate).toString(),
                 rating.actualRateAsString(), rating.totalVotes(),
-                toActorsInMovieNames());
+                asActorCharacter());
     }
 
     private List<String> directorsNamesAsString() {
         return directors.stream().map(Person::fullName).toList();
     }
 
-    private List<ActorInMovieName> toActorsInMovieNames() {
+    private List<ActorCharacter> asActorCharacter() {
         return this.actors.stream()
-                .map(actor -> new ActorInMovieName(actor.fullName(),
+                .map(actor -> new ActorCharacter(actor.fullName(),
                         actor.characterName()))
                 .toList();
     }

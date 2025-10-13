@@ -159,7 +159,7 @@ public class ShowTime {
         return new FormattedDayTime(this.startTime).toString();
     }
 
-    public ShowInfo toShowInfo() {
+    public ShowInfo asInfo() {
         return new ShowInfo(this.id, movieName(),
                 new MovieDurationFormat(movieToBeScreened.duration())
                         .toString(),
@@ -167,8 +167,8 @@ public class ShowTime {
                 this.price);
     }
 
-    public DetailedShowInfo toDetailedInfo() {
-        return new DetailedShowInfo(this.toShowInfo(),
+    public DetailedShowInfo asDetailedInfo() {
+        return new DetailedShowInfo(this.asInfo(),
                 this.screenedIn.name(),
                 this.seatsForThisShow.stream().map(ShowSeat::toSeat).toList());
     }

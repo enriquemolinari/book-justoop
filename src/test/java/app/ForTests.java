@@ -15,7 +15,7 @@ public class ForTests {
     static final String SUPER_MOVIE_NAME = "a super movie";
     static final String OTHER_SUPER_MOVIE_NAME = "another super movie";
     static final String SUPER_MOVIE_DIRECTOR_NAME = "aDirectorName surname";
-    static final ActorInMovieName SUPER_MOVIE_ACTOR_CARLOS = new ActorInMovieName(
+    static final ActorCharacter SUPER_MOVIE_ACTOR_CARLOS = new ActorCharacter(
             "Carlos Kalchi",
             "aCharacterName");
 

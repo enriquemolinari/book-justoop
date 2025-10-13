@@ -1,9 +1,9 @@
 package app;
 
-import jakarta.persistence.*;
-import lombok.*;
 import app.api.BusinessException;
 import app.api.UserProfile;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +92,7 @@ public class User {
         return this.person.email();
     }
 
-    public Map<String, Object> toMap() {
+    public Map<String, Object> asMap() {
         return Map.of("id", this.id);
     }
 
@@ -100,7 +100,7 @@ public class User {
         return id;
     }
 
-    public UserProfile toProfile() {
+    public UserProfile asUserProfile() {
         return new UserProfile(this.person.fullName(), this.userName,
                 this.person.email(), this.points);
     }

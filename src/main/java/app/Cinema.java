@@ -72,7 +72,7 @@ public class Cinema implements CinemaSystem {
                             Movie.class).setParameter(1, LocalDateTime.now())
                     .setParameter(2, untilTo);
             return query.getResultList().stream()
-                    .map(Movie::toMovieShow)
+                    .map(Movie::asMovieShow)
                     .toList();
         });
     }
@@ -95,7 +95,7 @@ public class Cinema implements CinemaSystem {
                         + "join fetch m.actors.person "
                         + "where m.id = ?1 "
                         + "order by m.name asc", Movie.class)
-                .setParameter(1, id).getSingleResult().toInfo();
+                .setParameter(1, id).getSingleResult().asInfo();
     }
 
     @Override
@@ -104,7 +104,7 @@ public class Cinema implements CinemaSystem {
         return emf.callInTransaction(em -> {
             var movie = new Movie(name, plot, duration, releaseDate, genres);
             em.persist(movie);
-            return movie.toInfo();
+            return movie.asInfo();
         });
     }
 
@@ -114,7 +114,7 @@ public class Cinema implements CinemaSystem {
         return emf.callInTransaction(em -> {
             var movie = em.getReference(Movie.class, movieId);
             movie.addAnActor(name, surname, email, characterName);
-            return movie.toInfo();
+            return movie.asInfo();
         });
     }
 
@@ -124,7 +124,7 @@ public class Cinema implements CinemaSystem {
         return emf.callInTransaction(em -> {
             var movie = em.getReference(Movie.class, movieId);
             movie.addADirector(name, surname, email);
-            return movie.toInfo();
+            return movie.asInfo();
         });
     }
 
@@ -143,8 +143,6 @@ public class Cinema implements CinemaSystem {
         return emf.callInTransaction(em -> {
             var movie = movieBy(em, movieId);
             var theatre = theatreBy(em, theaterId);
-//            var showTime = new ShowTime(movie, startTime, price, theatre,
-//                    pointsToWin);
             var showTime = ShowTime.scheduleFor(movie)
                     .in(theatre)
                     .pricedAt(price)
@@ -152,7 +150,7 @@ public class Cinema implements CinemaSystem {
                     .rewarding(pointsToWin)
                     .build();
             em.persist(showTime);
-            return showTime.toShowInfo();
+            return showTime.asInfo();
         });
     }
 
@@ -164,7 +162,7 @@ public class Cinema implements CinemaSystem {
             var user = userBy(em, userId);
             showTime.reserveSeatsFor(user, selectedSeats,
                     this.dateTimeProvider.now().plusMinutes(MINUTES_TO_KEEP_RESERVATION));
-            return showTime.toDetailedInfo();
+            return showTime.asDetailedInfo();
         });
     }
 
@@ -199,7 +197,7 @@ public class Cinema implements CinemaSystem {
             }
             var user = mightBeAUser.getFirst();
             em.persist(new LoginAudit(this.dateTimeProvider.now(), user));
-            return token.tokenFrom(user.toMap());
+            return token.tokenFrom(user.asMap());
         });
     }
 
@@ -224,9 +222,8 @@ public class Cinema implements CinemaSystem {
             checkUserIsRatingSameMovieTwice(em, userId, movieId);
             var user = userBy(em, userId);
             var movie = movieBy(em, movieId);
-
             var userRate = movie.rateBy(user, rateValue, comment);
-            return userRate.toUserMovieRate();
+            return userRate.asUserMovieRate();
         });
     }
 
@@ -301,7 +298,7 @@ public class Cinema implements CinemaSystem {
             q.setFirstResult((pageNumber - 1) * this.pageSize);
             q.setMaxResults(this.pageSize);
             return q.getResultList().stream()
-                    .map(UserRate::toUserMovieRate).toList();
+                    .map(UserRate::asUserMovieRate).toList();
         });
     }
 
@@ -309,7 +306,7 @@ public class Cinema implements CinemaSystem {
     public DetailedShowInfo show(Long id) {
         return emf.callInTransaction(em -> {
             var show = showTimeBy(em, id);
-            return show.toDetailedInfo();
+            return show.asDetailedInfo();
         });
     }
 
@@ -328,7 +325,7 @@ public class Cinema implements CinemaSystem {
             q.setParameter(1, "%" + fullOrPartmovieName + "%");
             q.setFirstResult((pageNumber - 1) * this.pageSize);
             q.setMaxResults(this.pageSize);
-            return q.getResultList().stream().map(Movie::toInfo).toList();
+            return q.getResultList().stream().map(Movie::asInfo).toList();
         });
     }
 
@@ -359,7 +356,7 @@ public class Cinema implements CinemaSystem {
                     Movie.class);
             q.setFirstResult((pageNumber - 1) * this.pageSize);
             q.setMaxResults(this.pageSize);
-            return q.getResultList().stream().map(Movie::toInfo).toList();
+            return q.getResultList().stream().map(Movie::asInfo).toList();
         });
     }
 
@@ -395,7 +392,7 @@ public class Cinema implements CinemaSystem {
 
     @Override
     public UserProfile profileFrom(Long userId) {
-        return emf.callInTransaction(em -> userBy(em, userId).toProfile());
+        return emf.callInTransaction(em -> userBy(em, userId).asUserProfile());
     }
 
     @Override

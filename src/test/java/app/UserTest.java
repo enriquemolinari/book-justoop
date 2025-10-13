@@ -129,7 +129,7 @@ public class UserTest {
         var u = createUserEnrique();
 
         assertEquals(new UserProfile("Enrique Molinari", "enriquemolinari",
-                "enrique.molinari@gmail.com", 0), u.toProfile());
+                "enrique.molinari@gmail.com", 0), u.asUserProfile());
     }
 
     @Test
