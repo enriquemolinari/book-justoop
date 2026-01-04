@@ -23,7 +23,7 @@ public class VerifyArchitectureTest {
     }
 
     @Test
-    public void webPackagesOutSideAppShouldOnlyDependOnAppApi() {
+    public void webPackageShouldOnlyDependOnAppApi() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
                         new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
                 .importPackages("app..", "spring..", "main");

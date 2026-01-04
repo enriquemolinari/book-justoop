@@ -484,9 +484,7 @@ public class CinemaSystemControllerTest {
 
     private Response reserveSeatsTwoFourFromShowPost(long showId) {
         var token = loginAsJoseAndGetCookie();
-
         JSONArray seatsRequest = jsonBodyForReserveSeats(2, 4);
-
         return reservePost(token, seatsRequest, showId);
     }
 
