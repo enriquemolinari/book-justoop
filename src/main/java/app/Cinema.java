@@ -241,8 +241,9 @@ public class Cinema implements CinemaSystem {
 
     private void checkUserNameAlreadyExists(EntityManager em, String userName) {
         var q = em.createQuery(
-                "select u from User u where u.userName = ?1 ", User.class);
+                "select u.id from User u where u.userName = ?1 ", Long.class);
         q.setParameter(1, userName);
+        q.setMaxResults(1);
         var mightBeAUser = q.getResultList();
         if (!mightBeAUser.isEmpty()) {
             throw new BusinessException(USER_NAME_ALREADY_EXISTS);
