@@ -4,3 +4,6 @@ target
 .settings
 bin
 derby.log
+/src/main/main.iml
+/src/test/test.iml
+/.idea/workspace.xml

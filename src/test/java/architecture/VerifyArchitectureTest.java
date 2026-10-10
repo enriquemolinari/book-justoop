@@ -2,6 +2,7 @@ package architecture;
 
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
+import com.tngtech.archunit.core.importer.ImportOption;
 import org.junit.jupiter.api.Test;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -11,7 +12,7 @@ public class VerifyArchitectureTest {
     @Test
     public void appShouldOnlyDependOnAppApi() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
-                        new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
+                        new ImportOption.DoNotIncludeTests())
                 .importPackages("app..", "spring..", "main");
         classes().that().resideInAPackage("app").should()
                 .onlyDependOnClassesThat()
@@ -25,7 +26,7 @@ public class VerifyArchitectureTest {
     @Test
     public void webPackageShouldOnlyDependOnAppApi() {
         JavaClasses importedClasses = new ClassFileImporter().withImportOption(
-                        new com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests())
+                        new ImportOption.DoNotIncludeTests())
                 .importPackages("app..", "spring..", "main");
         classes().that().resideInAPackage("spring.web").should()
                 .onlyDependOnClassesThat()
